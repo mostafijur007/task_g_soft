@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('suppliers', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique(); // e.g., SUP-0001
+            $table->string('code')->unique()->comment('Format: SUP-0001');
             $table->string('name');
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

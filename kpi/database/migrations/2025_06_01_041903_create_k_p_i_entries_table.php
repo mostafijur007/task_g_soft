@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('k_p_i_entries', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique(); // e.g., KPI-0001
+            $table->string('code')->unique()->comment('Format: KPI-0001');
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->foreignId('supplier_id')->constrained()->onDelete('cascade');
-            $table->string('month'); // Format: YYYY-MM
+            $table->string('month')->comment('Stores year-month (YYYY-MM)');
             $table->string('uom');
             $table->integer('quantity');
-            $table->decimal('asp', 10, 2); // Average Selling Price
-            $table->decimal('total_value', 12, 2);
+            $table->decimal('asp', 10, 2)->comment('Average Selling Price');
+            $table->decimal('total_value', 12, 2)->comment('Calculated: quantity * asp');
             $table->softDeletes();
             $table->timestamps();
         });

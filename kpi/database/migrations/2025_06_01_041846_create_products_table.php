@@ -13,8 +13,11 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique(); // e.g., PROD-0001
+            $table->string('code')->unique()->comment('Format: PROD-0001');
             $table->string('name');
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->string('uom')->comment('Unit of Measurement');
             $table->softDeletes();
             $table->timestamps();
         });
