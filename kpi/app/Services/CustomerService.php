@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Customer;
 use App\Repositories\Interfaces\CustomerRepositoryInterface;
 
 class CustomerService
@@ -20,6 +21,7 @@ class CustomerService
 
     public function store($data)
     {
+        $data['code'] = $this->generateCode();
         return $this->repo->create($data);
     }
 
@@ -41,5 +43,11 @@ class CustomerService
     public function restore($id)
     {
         return $this->repo->restore($id);
+    }
+
+    public function generateCode(): string
+    {
+        $count = Customer::withTrashed()->count() + 1;
+        return 'CUS-' . str_pad($count, 4, '0', STR_PAD_LEFT);
     }
 }
