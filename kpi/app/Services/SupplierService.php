@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Supplier;
 use App\Repositories\Interfaces\SupplierRepositoryInterface;
 
 class SupplierService
@@ -20,6 +21,7 @@ class SupplierService
 
     public function store($data)
     {
+        $data['code'] = $this->generateCode();
         return $this->repo->create($data);
     }
 
@@ -36,5 +38,11 @@ class SupplierService
     public function find($id)
     {
         return $this->repo->find($id);
+    }
+
+    public function generateCode(): string
+    {
+        $count = Supplier::withTrashed()->count() + 1;
+        return 'SUP-' . str_pad($count, 4, '0', STR_PAD_LEFT);
     }
 }

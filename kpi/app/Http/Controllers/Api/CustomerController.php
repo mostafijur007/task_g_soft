@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
  *      title="KPI Management API",
  *      description="Customer, Product, Supplier and KPIEntry CRUD APIs",
  *      @OA\Contact(
- *          email="admin@example.com"
+ *          email="mostafijur.til@gmail.com"
  *      )
  * )
  *
@@ -62,6 +62,14 @@ class CustomerController extends Controller
      *         @OA\JsonContent(
      *             type="array",
      *             @OA\Items(ref="#/components/schemas/CustomerResource")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred")
      *         )
      *     )
      * )
@@ -136,7 +144,6 @@ class CustomerController extends Controller
         } catch (\Exception $e) {
             return $this->error('Customer not found', 404);
         }
-        return response()->json($this->service->find($id));
     }
 
     /**

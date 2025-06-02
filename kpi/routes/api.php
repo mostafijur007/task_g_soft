@@ -13,7 +13,7 @@ Route::get('/user', function (Request $request) {
 
 
 Route::apiResource('customers', CustomerController::class);
-Route::post('customers/restore/{id}', [CustomerController::class, 'restore']); // Optional: restore soft deleted
+Route::post('customers/restore/{id}', [CustomerController::class, 'restore']);
 
 // Products CRUD
 Route::apiResource('products', ProductController::class);
