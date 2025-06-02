@@ -441,6 +441,330 @@
                 }
             }
         },
+        "/api/kpis": {
+            "get": {
+                "tags": [
+                    "KPIs"
+                ],
+                "summary": "Get all KPI entries or filter by month",
+                "operationId": "c6a45f1b12dff8472156e76783c4147f",
+                "parameters": [
+                    {
+                        "name": "month",
+                        "in": "query",
+                        "description": "Filter by month (format: YYYY-MM)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2025-06"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of KPI entries",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Sales Target"
+                                            },
+                                            "value": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 85.5
+                                            },
+                                            "month": {
+                                                "type": "string",
+                                                "example": "2025-06"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "KPIs"
+                ],
+                "summary": "Store a new KPI entry",
+                "operationId": "ddce4a6593c452e7bd353ab7554604e8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "value",
+                                    "month"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Sales Target"
+                                    },
+                                    "value": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 90.5
+                                    },
+                                    "month": {
+                                        "type": "string",
+                                        "example": "2025-06"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "KPI created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Sales Target"
+                                        },
+                                        "value": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 90.5
+                                        },
+                                        "month": {
+                                            "type": "string",
+                                            "example": "2025-06"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/kpis/{id}": {
+            "get": {
+                "tags": [
+                    "KPIs"
+                ],
+                "summary": "Get a specific KPI entry",
+                "operationId": "c3fe7c64e9ba1e65de2e500184cac0c2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "KPI found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Sales Target"
+                                        },
+                                        "value": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 85.5
+                                        },
+                                        "month": {
+                                            "type": "string",
+                                            "example": "2025-06"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "KPI not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "KPIs"
+                ],
+                "summary": "Update a specific KPI entry",
+                "operationId": "80c46d6e2473c0a4b78fa11eecfa2768",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "value",
+                                    "month"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Sales Target"
+                                    },
+                                    "value": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 90.5
+                                    },
+                                    "month": {
+                                        "type": "string",
+                                        "example": "2025-06"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "KPI updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Sales Target"
+                                        },
+                                        "value": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 90.5
+                                        },
+                                        "month": {
+                                            "type": "string",
+                                            "example": "2025-06"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "KPIs"
+                ],
+                "summary": "Delete a specific KPI entry",
+                "operationId": "a4f94977cf5853f9c32e517ecfc2445e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/products": {
             "get": {
                 "tags": [
@@ -1405,6 +1729,10 @@
         {
             "name": "Customers",
             "description": "Customer API Endpoints"
+        },
+        {
+            "name": "KPIs",
+            "description": "Operations related to KPI management"
         },
         {
             "name": "Products",

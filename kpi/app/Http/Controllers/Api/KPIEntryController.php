@@ -3,47 +3,195 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\KPIEntryRequest;
+use App\Services\KPIEntryService;
 use Illuminate\Http\Request;
 
+/**
+ * @OA\Tag(
+ *     name="KPIs",
+ *     description="Operations related to KPI management"
+ * )
+ */
 class KPIEntryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected $service;
+
+    public function __construct(KPIEntryService $service)
     {
-        //
+        $this->service = $service;
     }
 
     /**
-     * Store a newly created resource in storage.
+     * @OA\Get(
+     *     path="/api/kpis",
+     *     summary="Get all KPI entries or filter by month",
+     *     tags={"KPIs"},
+     *     @OA\Parameter(
+     *         name="month",
+     *         in="query",
+     *         description="Filter by month (format: YYYY-MM)",
+     *         required=false,
+     *         @OA\Schema(type="string", example="2025-06")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of KPI entries",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Sales Target"),
+     *                 @OA\Property(property="value", type="number", format="float", example=85.5),
+     *                 @OA\Property(property="month", type="string", example="2025-06"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
+     *         )
+     *     )
+     * )
      */
-    public function store(Request $request)
+    public function index(Request $request)
     {
-        //
+        if ($request->has('month')) {
+            return response()->json($this->service->getByMonth($request->month));
+        }
+
+        return response()->json($this->service->getAll());
     }
 
     /**
-     * Display the specified resource.
+     * @OA\Post(
+     *     path="/api/kpis",
+     *     summary="Store a new KPI entry",
+     *     tags={"KPIs"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             required={"name", "value", "month"},
+     *             @OA\Property(property="name", type="string", example="Sales Target"),
+     *             @OA\Property(property="value", type="number", format="float", example=90.5),
+     *             @OA\Property(property="month", type="string", example="2025-06")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="KPI created successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="name", type="string", example="Sales Target"),
+     *             @OA\Property(property="value", type="number", format="float", example=90.5),
+     *             @OA\Property(property="month", type="string", example="2025-06"),
+     *             @OA\Property(property="created_at", type="string", format="date-time"),
+     *             @OA\Property(property="updated_at", type="string", format="date-time")
+     *         )
+     *     )
+     * )
      */
-    public function show(string $id)
+    public function store(KPIEntryRequest $request)
     {
-        //
+        return response()->json($this->service->store($request->validated()), 201);
     }
 
     /**
-     * Update the specified resource in storage.
+     * @OA\Get(
+     *     path="/api/kpis/{id}",
+     *     summary="Get a specific KPI entry",
+     *     tags={"KPIs"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="KPI found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="name", type="string", example="Sales Target"),
+     *             @OA\Property(property="value", type="number", format="float", example=85.5),
+     *             @OA\Property(property="month", type="string", example="2025-06"),
+     *             @OA\Property(property="created_at", type="string", format="date-time"),
+     *             @OA\Property(property="updated_at", type="string", format="date-time")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="KPI not found")
+     * )
      */
-    public function update(Request $request, string $id)
+    public function show($id)
     {
-        //
+        return response()->json($this->service->find($id));
     }
 
     /**
-     * Remove the specified resource from storage.
+     * @OA\Put(
+     *     path="/api/kpis/{id}",
+     *     summary="Update a specific KPI entry",
+     *     tags={"KPIs"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             required={"name", "value", "month"},
+     *             @OA\Property(property="name", type="string", example="Sales Target"),
+     *             @OA\Property(property="value", type="number", format="float", example=90.5),
+     *             @OA\Property(property="month", type="string", example="2025-06")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="KPI updated successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="name", type="string", example="Sales Target"),
+     *             @OA\Property(property="value", type="number", format="float", example=90.5),
+     *             @OA\Property(property="month", type="string", example="2025-06"),
+     *             @OA\Property(property="created_at", type="string", format="date-time"),
+     *             @OA\Property(property="updated_at", type="string", format="date-time")
+     *         )
+     *     )
+     * )
      */
-    public function destroy(string $id)
+    public function update(KPIEntryRequest $request, $id)
     {
-        //
+        return response()->json($this->service->update($id, $request->validated()));
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/kpis/{id}",
+     *     summary="Delete a specific KPI entry",
+     *     tags={"KPIs"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Deleted successfully")
+     *         )
+     *     )
+     * )
+     */
+    public function destroy($id)
+    {
+        $this->service->delete($id);
+        return response()->json(['message' => 'Deleted successfully']);
     }
 }
