@@ -40,9 +40,24 @@ class ProductService
         return $this->repo->find($id);
     }
 
-     public function generateCode(): string
+    public function generateCode(): string
     {
         $count = Product::withTrashed()->count() + 1;
         return 'PROD-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+    }
+
+    public function assignSuppliers($productId, array $supplierIds)
+    {
+        $this->repo->assignSuppliers($productId, $supplierIds);
+    }
+
+    public function getAssignedSuppliers($productId)
+    {
+        return $this->repo->getAssignedSuppliers($productId);
+    }
+
+    public function removeSupplier($productId, $supplierId)
+    {
+        $this->repo->removeSupplier($productId, $supplierId);
     }
 }

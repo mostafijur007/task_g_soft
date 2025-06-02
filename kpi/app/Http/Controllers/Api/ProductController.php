@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AssignSuppliersRequest;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Services\ProductService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Tag(
@@ -275,12 +277,156 @@ class ProductController extends Controller
     {
         try {
             $this->service->delete($id);
+
             return $this->success(
-                '',
+                null,
                 'Product deleted successfully'
             );
         } catch (\Exception $e) {
-            return $this->error('Product not found', 404);
+            Log::error('Failed to delete product', [
+                'product_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('An unexpected error occurred', 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/product-suppliers/{productId}",
+     *     summary="Assign suppliers to a product",
+     *     tags={"Products"},
+     *     @OA\Parameter(
+     *         name="productId",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the product",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"supplier_ids"},
+     *             @OA\Property(
+     *                 property="supplier_ids",
+     *                 type="array",
+     *                 @OA\Items(type="integer", example=1)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Suppliers assigned successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Suppliers assigned successfully")
+     *         )
+     *     )
+     * )
+     */
+    public function assignSuppliers(AssignSuppliersRequest $request, $productId)
+    {
+        try {
+            $this->service->assignSuppliers($productId, $request->validated('supplier_ids'));
+
+            return $this->success(
+                null,
+                'Suppliers assigned successfully'
+            );
+        } catch (\Exception $e) {
+
+            Log::error('Error assigning suppliers', ['error' => $e->getMessage()]);
+            return $this->error('An unexpected error occurred', 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/product-suppliers/{productId}",
+     *     summary="Get all suppliers assigned to a product",
+     *     tags={"Products"},
+     *     @OA\Parameter(
+     *         name="productId",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the product",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of assigned suppliers",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="code", type="string", example="SUP-001"),
+     *                 @OA\Property(property="name", type="string", example="XYZ Supplier")
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function getAssignedSuppliers($productId)
+    {
+        try {
+            $suppliers = $this->service->getAssignedSuppliers($productId);
+
+            return $this->success($suppliers, 'Assigned suppliers retrieved successfully');
+        } catch (\Exception $e) {
+            Log::error('Failed to get assigned suppliers', [
+                'product_id' => $productId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('An unexpected error occurred', 500);
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/product-suppliers/{productId}/{supplierId}",
+     *     summary="Remove a supplier from a product",
+     *     tags={"Products"},
+     *     @OA\Parameter(
+     *         name="productId",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the product",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="supplierId",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the supplier to remove",
+     *         @OA\Schema(type="integer", example=5)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Supplier removed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Supplier removed successfully")
+     *         )
+     *     )
+     * )
+     */
+    public function removeSupplier($productId, $supplierId)
+    {
+        try {
+            $this->service->removeSupplier($productId, $supplierId);
+
+            return $this->success(
+                null,
+                'Supplier removed successfully'
+            );
+        } catch (\Exception $e) {
+            Log::error('Failed to remove supplier', [
+                'product_id' => $productId,
+                'supplier_id' => $supplierId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('An unexpected error occurred', 500);
         }
     }
 }

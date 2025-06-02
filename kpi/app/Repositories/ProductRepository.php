@@ -33,4 +33,21 @@ class ProductRepository implements ProductRepositoryInterface
     {
         return Product::findOrFail($id)->delete();
     }
+
+    public function assignSuppliers($productId, array $supplierIds)
+    {
+        $product = Product::findOrFail($productId);
+        $product->suppliers()->syncWithoutDetaching($supplierIds);
+    }
+
+    public function getAssignedSuppliers($productId)
+    {
+        return Product::findOrFail($productId)->suppliers;
+    }
+
+    public function removeSupplier($productId, $supplierId)
+    {
+        $product = Product::findOrFail($productId);
+        $product->suppliers()->detach($supplierId);
+    }
 }
