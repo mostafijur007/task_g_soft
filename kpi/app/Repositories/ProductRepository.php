@@ -7,14 +7,14 @@ use App\Repositories\Interfaces\ProductRepositoryInterface;
 
 class ProductRepository implements ProductRepositoryInterface
 {
-    public function all()
+    public function all($perPage = 15)
     {
-        return Product::all();
+        return Product::with(['customers', 'suppliers'])->paginate($perPage);
     }
 
     public function find($id)
     {
-        return Product::findOrFail($id);
+        return Product::with(['customers', 'suppliers'])->findOrFail($id);
     }
 
     public function create(array $data)
