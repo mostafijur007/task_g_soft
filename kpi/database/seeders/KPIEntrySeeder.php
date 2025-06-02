@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\KPIEntry;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -12,6 +13,6 @@ class KPIEntrySeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        KPIEntry::factory()->count(10)->create();
     }
 }
