@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\KPIEntry;
 use App\Repositories\Interfaces\KPIEntryRepositoryInterface;
+use Illuminate\Support\Facades\Log;
 
 class KPIEntryService
 {
@@ -20,6 +22,7 @@ class KPIEntryService
 
     public function store($data)
     {
+        $data['code'] = $this->generateCode();
         return $this->repo->create($data);
     }
 
@@ -41,5 +44,12 @@ class KPIEntryService
     public function getByMonth($month)
     {
         return $this->repo->byMonth($month);
+    }
+
+    public function generateCode(): string
+    {
+        $count = KPIEntry::withTrashed()->count() + 1;
+        Log::info($count);
+        return 'KPI-' . str_pad($count, 4, '0', STR_PAD_LEFT);
     }
 }

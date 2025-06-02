@@ -70,10 +70,15 @@ class KPIEntryController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             type="object",
-     *             required={"name", "value", "month"},
-     *             @OA\Property(property="name", type="string", example="Sales Target"),
-     *             @OA\Property(property="value", type="number", format="float", example=90.5),
-     *             @OA\Property(property="month", type="string", example="2025-06")
+     *             required={"customer_id", "supplier_id", "uom", "product_id", "quantity", "asp", "total_value"},
+     *             @OA\Property(property="customer_id", type="number", example="1"),
+     *             @OA\Property(property="month", type="string", example="2025-06"),
+     *             @OA\Property(property="product_id", type="number", example="1"),
+     *             @OA\Property(property="supplier_id", type="number", example="1"),
+     *             @OA\Property(property="uom", type="string", example="kg"),
+     *             @OA\Property(property="quantity", type="number", example="1"),
+     *             @OA\Property(property="asp", type="number", example="5"),
+     *             @OA\Property(property="total_value", type="number", example="5"),
      *         )
      *     ),
      *     @OA\Response(

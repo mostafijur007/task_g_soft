@@ -515,23 +515,46 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "name",
-                                    "value",
-                                    "month"
+                                    "customer_id",
+                                    "supplier_id",
+                                    "uom",
+                                    "product_id",
+                                    "quantity",
+                                    "asp",
+                                    "total_value"
                                 ],
                                 "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Sales Target"
-                                    },
-                                    "value": {
+                                    "customer_id": {
                                         "type": "number",
-                                        "format": "float",
-                                        "example": 90.5
+                                        "example": "1"
                                     },
                                     "month": {
                                         "type": "string",
                                         "example": "2025-06"
+                                    },
+                                    "product_id": {
+                                        "type": "number",
+                                        "example": "1"
+                                    },
+                                    "supplier_id": {
+                                        "type": "number",
+                                        "example": "1"
+                                    },
+                                    "uom": {
+                                        "type": "string",
+                                        "example": "kg"
+                                    },
+                                    "quantity": {
+                                        "type": "number",
+                                        "example": "1"
+                                    },
+                                    "asp": {
+                                        "type": "number",
+                                        "example": "5"
+                                    },
+                                    "total_value": {
+                                        "type": "number",
+                                        "example": "5"
                                     }
                                 },
                                 "type": "object"
