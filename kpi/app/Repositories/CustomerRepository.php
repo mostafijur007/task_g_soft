@@ -43,4 +43,27 @@ class CustomerRepository implements CustomerRepositoryInterface
         $customer->restore();
         return true;
     }
+
+    public function assignProducts($customerId, array $productIds)
+    {
+        $customer = Customer::findOrFail($customerId);
+        $customer->products()->syncWithoutDetaching($productIds);
+    }
+
+    public function getAssignedProducts($customerId)
+    {
+        if (!Customer::where('id', $customerId)->exists()) {
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Customer not found");
+        }
+        return Customer::findOrFail($customerId)->products;
+    }
+
+    public function removeProduct($customerId, $productId)
+    {
+        $customer = Customer::findOrFail($customerId);
+
+        if (!$customer->products()->detach($productId)) {
+            throw new \Exception("Detach failed");
+        }
+    }
 }

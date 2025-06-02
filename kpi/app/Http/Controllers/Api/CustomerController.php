@@ -8,6 +8,7 @@ use App\Http\Resources\CustomerResource;
 use App\Services\CustomerService;
 use App\Traits\ApiResponseTrait;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 /**
@@ -244,6 +245,155 @@ class CustomerController extends Controller
             );
         } catch (Exception $e) {
             return $this->error('Customer not found', 404);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/customer-products/{customerId}",
+     *     summary="Assign products to a customer",
+     *     tags={"Customers"},
+     *     @OA\Parameter(
+     *         name="customerId",
+     *         in="path",
+     *         required=true,
+     *         description="Customer ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"product_ids"},
+     *             @OA\Property(
+     *                 property="product_ids",
+     *                 type="array",
+     *                 @OA\Items(type="integer"),
+     *                 example={1, 2, 3}
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Products assigned",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Products assigned")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation failed"
+     *     )
+     * )
+     */
+    public function assignProducts(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'product_ids' => 'required|array',
+                'product_ids.*' => 'integer|exists:products,id',
+            ]);
+
+            $this->service->assignProducts($id, $validated['product_ids']);
+
+            return $this->success(
+                null,
+                'Products assigned successfully.'
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->error('Customer not found.', 404);
+        } catch (Exception $e) {
+            return $this->error('An unexpected error occurred.', 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/customer-products/{customerId}",
+     *     summary="Get products assigned to a customer",
+     *     tags={"Customers"},
+     *     @OA\Parameter(
+     *         name="customerId",
+     *         in="path",
+     *         required=true,
+     *         description="Customer ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of assigned products",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="code", type="string", example="PROD-0001"),
+     *                 @OA\Property(property="name", type="string", example="Sample Product"),
+     *                 @OA\Property(property="uom", type="string", example="pcs"),
+     *                 @OA\Property(property="description", type="string", nullable=true, example="This is a sample product"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-01T12:00:00Z"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-02T12:00:00Z")
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function getAssignedProducts($id)
+    {
+        try {
+            $products = $this->service->getAssignedProducts($id);
+
+            return $this->success(
+                $products,
+                'Assigned products retrieved successfully'
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->error('Customer not found', 404);
+        } catch (\Exception $e) {
+            return $this->error('An unexpected error occurred', 500);
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/customer-products/{customerId}/{productId}",
+     *     summary="Remove a product from a customer",
+     *     tags={"Customers"},
+     *     @OA\Parameter(
+     *         name="customerId",
+     *         in="path",
+     *         required=true,
+     *         description="Customer ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="productId",
+     *         in="path",
+     *         required=true,
+     *         description="Product ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Product removed",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Product removed")
+     *         )
+     *     )
+     * )
+     */
+    public function removeProduct($customerId, $productId)
+    {
+        try {
+            $this->service->removeProduct($customerId, $productId);
+
+            return $this->success(
+                null,
+                'Product removed successfully from customer'
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->error('Customer or product not found', 404);
+        } catch (\Exception $e) {
+            return $this->error('An error occurred while removing the product', 500);
         }
     }
 }

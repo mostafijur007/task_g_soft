@@ -50,4 +50,19 @@ class CustomerService
         $count = Customer::withTrashed()->count() + 1;
         return 'CUS-' . str_pad($count, 4, '0', STR_PAD_LEFT);
     }
+
+    public function assignProducts($customerId, array $productIds)
+    {
+        $this->repo->assignProducts($customerId, $productIds);
+    }
+
+    public function getAssignedProducts($customerId)
+    {
+        return $this->repo->getAssignedProducts($customerId);
+    }
+
+    public function removeProduct($customerId, $productId)
+    {
+        $this->repo->removeProduct($customerId, $productId);
+    }
 }

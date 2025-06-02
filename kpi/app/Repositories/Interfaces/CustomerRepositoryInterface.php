@@ -10,4 +10,8 @@ interface CustomerRepositoryInterface
     public function update($id, array $data);
     public function delete($id);
     public function restore($id);
+
+    public function assignProducts($customerId, array $productIds);
+    public function getAssignedProducts($customerId);
+    public function removeProduct($customerId, $productId);
 }
