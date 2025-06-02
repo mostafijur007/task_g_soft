@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('code')->unique()->comment('Format: PROD-0001');
             $table->string('name');
-            $table->string('name');
             $table->text('description')->nullable();
             $table->string('uom')->comment('Unit of Measurement');
             $table->softDeletes();
