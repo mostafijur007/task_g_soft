@@ -16,8 +16,13 @@ class SupplierFactory extends Factory
      */
     public function definition(): array
     {
+        static $codeNumber = 1;
+
         return [
-            //
+            'code' => 'SUP-' . str_pad($codeNumber++, 4, '0', STR_PAD_LEFT),
+            'name' => $this->faker->company(),
+            'email' =>  $this->faker->optional()->email(),
+            'phone' => $this->faker->optional()->phoneNumber(),
         ];
     }
 }
