@@ -1,4 +1,3 @@
-// KPISetupForm.jsx
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -7,7 +6,7 @@ import {
   fetchKpiData,
   createBulkKpi,
   fetchSuppliers,
-  assignSupplierToProducts,  // Add this import
+  assignSupplierToProducts,
 } from "../redux/store";
 
 const KPISetupForm = () => {
@@ -38,7 +37,6 @@ const KPISetupForm = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    console.log("product", name, value);
     setSelectedProducts("");
     setFormData({ ...formData, [name]: value });
     if (formErrors[name]) setFormErrors({ ...formErrors, [name]: "" });
@@ -98,6 +96,8 @@ const KPISetupForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('submit');
+    
     if (!validateForm()) return;
 
     const kpiRecords = selectedProducts.map((product) => ({
@@ -114,9 +114,6 @@ const KPISetupForm = () => {
       await dispatch(createBulkKpi(kpiRecords)).unwrap();
       setFormData({
         unit: "",
-        material: "",
-        itemGroup: "",
-        item: "",
         customer: "",
         month: new Date().toISOString().split("T")[0],
       });
