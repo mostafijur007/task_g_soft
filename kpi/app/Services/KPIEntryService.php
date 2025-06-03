@@ -55,11 +55,15 @@ class KPIEntryService
 
     public function bulkStore(array $entries)
     {
+        $created = [];
+
         foreach ($entries as $entry) {
-            KPIEntry::create([
+            $created[] = KPIEntry::create([
                 ...$entry,
                 'code' => $this->generateCode(),
             ]);
         }
+
+        return $created;
     }
 }

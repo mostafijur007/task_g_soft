@@ -211,7 +211,11 @@ class KPIEntryController extends Controller
 
     public function bulkStore(StoreKPIEntryRequest $request)
     {
-        $this->service->bulkStore($request->validated()['entries']);
-        return response()->json(['message' => 'KPI entries created successfully']);
+        $entries = $this->service->bulkStore($request->validated()['entries']);
+        return $this->success(
+            KpiEntryResource::collection($entries),
+            'KPI entries created successfully',
+            201
+        );
     }
 }
