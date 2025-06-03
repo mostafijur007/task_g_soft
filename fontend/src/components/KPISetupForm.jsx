@@ -22,6 +22,9 @@ const KPISetupForm = () => {
   });
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [assignedSuppliers, setAssignedSuppliers] = useState({});
+  const [asps, setAsps] = useState({});
+  const [quantities, setQuantities] = useState({});
+  const [units, setUnits] = useState({});
   const [formErrors, setFormErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -55,29 +58,27 @@ const KPISetupForm = () => {
 
   const handleSupplierAssignment = async (productId, supplierId) => {
     try {
-      await dispatch(assignSupplierToProducts({
-        supplier_ids: [supplierId],
-        product_id: productId
-      })).unwrap();
-      
+      await dispatch(
+        assignSupplierToProducts({
+          supplier_ids: [supplierId],
+          product_id: productId,
+        })
+      ).unwrap();
+
       setAssignedSuppliers({ ...assignedSuppliers, [productId]: supplierId });
       setSuccessMessage("Supplier assigned successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
       console.error("Supplier assignment failed:", err);
       setFormErrors({
-        submit: "Failed to assign supplier. Please try again." // Error message is not specific to the product
+        submit: "Failed to assign supplier. Please try again.", // Error message is not specific to the product
       });
     }
-};
+  };
 
   const validateForm = () => {
     const errors = {};
-    const fields = [
-      "unit",
-      "customer",
-      "month",
-    ];
+    const fields = ["customer", "month"];
     fields.forEach((f) => {
       if (!formData[f]) errors[f] = `${f} is required`;
     });
@@ -93,8 +94,8 @@ const KPISetupForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('submit');
-    
+    console.log("submit");
+
     if (!validateForm()) return;
 
     const kpiRecords = selectedProducts.map((product) => ({
@@ -102,21 +103,23 @@ const KPISetupForm = () => {
       customer_id: formData.customer,
       product_id: product,
       supplier_id: assignedSuppliers[product],
-      uom: formData.unit,
-      quantity: 0,
-      asp: 0,
+      uom: units[product],
+      quantity: quantities[product],
+      asp: asps[product],
       total_value: 0,
     }));
 
     try {
       await dispatch(createBulkKpi(kpiRecords)).unwrap();
       setFormData({
-        unit: "",
         customer: "",
         month: new Date().toISOString().split("T")[0],
       });
       setSelectedProducts([]);
       setAssignedSuppliers({});
+      setQuantities({});
+      setAsps({});
+      setUnits({});
       setSuccessMessage("KPI setup created successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
@@ -143,30 +146,6 @@ const KPISetupForm = () => {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Unit of Measure (UOM)
-              </label>
-              <select
-                name="unit"
-                value={formData.unit}
-                onChange={handleInputChange}
-                className={`w-full p-2 border rounded-md ${
-                  formErrors.unit ? "border-red-500" : "border-gray-300"
-                }`}
-              >
-                <option value="">Select unit</option>
-                {options.units.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-              {formErrors.unit && (
-                <p className="mt-1 text-sm text-red-600">{formErrors.unit}</p>
-              )}
-            </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Customer
@@ -251,7 +230,10 @@ const KPISetupForm = () => {
                     (p) => p.id === productId
                   );
                   return (
-                    <div key={productId} className="flex items-center space-x-2">
+                    <div
+                      key={productId}
+                      className="flex items-center space-x-2"
+                    >
                       <span className="w-32 font-medium text-gray-700">
                         {productDetails?.name || productId}
                         <span className="block text-xs text-gray-500">
@@ -261,10 +243,12 @@ const KPISetupForm = () => {
                       <div className="flex-1 flex space-x-2">
                         <select
                           value={assignedSuppliers[productId] || ""}
-                          onChange={(e) => setAssignedSuppliers({ 
-                            ...assignedSuppliers, 
-                            [productId]: e.target.value 
-                          })}
+                          onChange={(e) =>
+                            setAssignedSuppliers({
+                              ...assignedSuppliers,
+                              [productId]: e.target.value,
+                            })
+                          }
                           className={`flex-1 p-2 border rounded-md ${
                             !assignedSuppliers[productId]
                               ? "border-red-500"
@@ -278,18 +262,73 @@ const KPISetupForm = () => {
                             </option>
                           ))}
                         </select>
-                        <button
-                          type="button"
-                          onClick={() => handleSupplierAssignment(productId, assignedSuppliers[productId])}
-                          disabled={!assignedSuppliers[productId]}
-                          className={`px-4 py-2 rounded-md ${
-                            assignedSuppliers[productId]
-                              ? "bg-blue-600 text-white hover:bg-blue-700"
-                              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+
+                        {/* <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Unit of Measure (UOM)
+                          </label> */}
+                        <select
+                          name="unit"
+                          value={units[productId]}
+                          onChange={(e) =>
+                            setUnits({
+                              ...units,
+                              [productId]: e.target.value,
+                            })
+                          }
+                          className={`w-full p-2 border rounded-md ${
+                            !units[productId]
+                              ? "border-red-500"
+                              : "border-gray-300"
                           }`}
                         >
-                          Assign
-                        </button>
+                          <option value="">Select unit</option>
+                          {options.units.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                        {formErrors.unit && (
+                          <p className="mt-1 text-sm text-red-600">
+                            {formErrors.unit}
+                          </p>
+                        )}
+                        {/* </div> */}
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="Quantity"
+                          value={quantities[productId] || ""}
+                          onChange={(e) =>
+                            setQuantities({
+                              ...quantities,
+                              [productId]: e.target.value,
+                            })
+                          }
+                          className={`p-2 border rounded-md ${
+                            !quantities[productId]
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                        />
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="ASP"
+                          value={asps[productId] || ""}
+                          onChange={(e) =>
+                            setAsps({
+                              ...asps,
+                              [productId]: e.target.value,
+                            })
+                          }
+                          className={`p-2 border rounded-md ${
+                            !asps[productId]
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                        />
                       </div>
                     </div>
                   );
