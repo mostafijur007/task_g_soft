@@ -28,7 +28,9 @@ export const fetchKpiData = createAsyncThunk("app/fetchKpiData", async () => {
 export const createBulkKpi = createAsyncThunk(
   "app/createBulkKpi",
   async (kpiRecords) => {
-    const response = await axios.post(`${API_URL}/kpi/bulk`, kpiRecords);
+    const response = await axios.post(`${API_URL}/kpi/bulk`, {
+      entries: kpiRecords,
+    });
     return response.data;
   }
 );
@@ -110,7 +112,7 @@ const appSlice = createSlice({
         state.kpiData = action.payload;
       })
       .addCase(createBulkKpi.fulfilled, (state, action) => {
-        state.kpiData = [...state.kpiData, ...action.payload];
+        state.kpiData = [...state.kpiData, ...action.payload.data];
       })
       .addCase(updateKpiRecord.fulfilled, (state, action) => {
         const updated = action.payload;

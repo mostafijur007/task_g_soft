@@ -75,9 +75,6 @@ const KPISetupForm = () => {
     const errors = {};
     const fields = [
       "unit",
-      "material",
-      "itemGroup",
-      "item",
       "customer",
       "month",
     ];
@@ -102,12 +99,13 @@ const KPISetupForm = () => {
 
     const kpiRecords = selectedProducts.map((product) => ({
       month: new Date(formData.month).toISOString().split("T")[0],
-      customer: formData.customer,
-      product,
-      supplier: assignedSuppliers[product],
+      customer_id: formData.customer,
+      product_id: product,
+      supplier_id: assignedSuppliers[product],
       uom: formData.unit,
       quantity: 0,
       asp: 0,
+      total_value: 0,
     }));
 
     try {
