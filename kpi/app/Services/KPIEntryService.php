@@ -52,4 +52,14 @@ class KPIEntryService
         Log::info($count);
         return 'KPI-' . str_pad($count, 4, '0', STR_PAD_LEFT);
     }
+
+    public function bulkStore(array $entries)
+    {
+        foreach ($entries as $entry) {
+            KPIEntry::create([
+                ...$entry,
+                'code' => $this->generateCode(),
+            ]);
+        }
+    }
 }

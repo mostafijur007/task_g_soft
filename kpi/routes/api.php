@@ -25,7 +25,8 @@ Route::post('suppliers/restore/{id}', [SupplierController::class, 'restore']); /
 
 // KPI Entries
 Route::apiResource('kpis', KPIEntryController::class);
-Route::get('kpis/month/{month}', [KPIEntryController::class, 'monthWise']); // e.g. /api/kpi-entries/month/2025-06
+Route::get('kpis/month/{month}', [KPIEntryController::class, 'monthWise']); // e.g. /api/kpi-entries/month/2025-
+Route::post('kpi/bulk', [KPIEntryController::class, 'bulkStore']);
 
 // Assignments (custom pivot logic, if applicable)
 Route::post('customer-products/{customerId}', [CustomerController::class, 'assignProducts']);

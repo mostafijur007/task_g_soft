@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->foreignId('supplier_id')->constrained()->onDelete('cascade');
-            $table->string('month')->comment('Stores year-month (YYYY-MM)');
+            $table->string('month')->comment('Stores year-month (YYYY-MM-DD)');
             $table->string('uom');
             $table->integer('quantity');
             $table->decimal('asp', 10, 2)->comment('Average Selling Price');

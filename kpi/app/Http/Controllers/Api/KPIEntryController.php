@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\KPIEntryRequest;
+use App\Http\Requests\StoreKPIEntryRequest;
 use App\Services\KPIEntryService;
 use Illuminate\Http\Request;
 
@@ -198,5 +199,11 @@ class KPIEntryController extends Controller
     {
         $this->service->delete($id);
         return response()->json(['message' => 'Deleted successfully']);
+    }
+
+    public function bulkStore(StoreKPIEntryRequest $request)
+    {
+        $this->service->bulkStore($request->validated()['entries']);
+        return response()->json(['message' => 'KPI entries created successfully']);
     }
 }
