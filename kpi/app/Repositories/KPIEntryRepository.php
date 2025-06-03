@@ -9,7 +9,7 @@ class KPIEntryRepository implements KPIEntryRepositoryInterface
 {
     public function all()
     {
-        return KPIEntry::all();
+        return KPIEntry::with('customer', 'product', 'supplier')->get();
     }
 
     public function find($id)
@@ -36,6 +36,6 @@ class KPIEntryRepository implements KPIEntryRepositoryInterface
 
     public function byMonth($month)
     {
-        return KPIEntry::where('month', $month)->get();
+        return KPIEntry::with('customer', 'product', 'supplier')->where('month', $month)->get();
     }
 }

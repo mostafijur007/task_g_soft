@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\KPIEntryRequest;
 use App\Http\Requests\StoreKPIEntryRequest;
+use App\Http\Resources\KpiEntryResource;
 use App\Services\KPIEntryService;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 
 /**
@@ -16,6 +18,8 @@ use Illuminate\Http\Request;
  */
 class KPIEntryController extends Controller
 {
+    use ApiResponseTrait;
+
     protected $service;
 
     public function __construct(KPIEntryService $service)
@@ -55,11 +59,15 @@ class KPIEntryController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->has('month')) {
-            return response()->json($this->service->getByMonth($request->month));
-        }
+        $data = $request->has('month')
+            ? $this->service->getByMonth($request->month)
+            : $this->service->getAll();
 
-        return response()->json($this->service->getAll());
+        return $this->success(
+            KpiEntryResource::collection($data),
+            'Kpi entry retrieved successfully',
+            201
+        );
     }
 
     /**
