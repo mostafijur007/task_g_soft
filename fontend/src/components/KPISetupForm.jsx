@@ -1,341 +1,237 @@
-// src/components/KPISetupForm.jsx
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+// KPISetupForm.jsx
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+    fetchOptions,
+    fetchCustomerProducts,
+    fetchKpiData,
+    createBulkKpi
+} from '../redux/store';
 
-const KPISetupForm = ({ onAddKPI, kpiData }) => {
-  const [formData, setFormData] = useState({
-    unit: '',
-    material: '',
-    itemGroup: '',
-    item: '',
-    customer: '',
-    products: [],
-    suppliers: {}
-  });
+const KPISetupForm = () => {
+    const dispatch = useDispatch();
+    const { options, customerProducts, loading, kpiData } = useSelector(state => state.app);
 
-  const [options, setOptions] = useState({
-    units: [],
-    materials: [],
-    itemGroups: [],
-    items: [],
-    customers: [],
-    allProducts: [],
-    allSuppliers: []
-  });
+    const [formData, setFormData] = useState({
+        unit: '', customer: '',
+        month: new Date().toISOString().split('T')[0]
+    });
+    const [selectedProducts, setSelectedProducts] = useState([]);
+    const [assignedSuppliers, setAssignedSuppliers] = useState({});
+    const [formErrors, setFormErrors] = useState({});
+    const [successMessage, setSuccessMessage] = useState('');
 
-  const [customerProducts, setCustomerProducts] = useState([]);
-  const [selectedProducts, setSelectedProducts] = useState([]);
-  const [assignedSuppliers, setAssignedSuppliers] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [formErrors, setFormErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState('');
+    useEffect(() => {
+        dispatch(fetchOptions());
+        dispatch(fetchKpiData());
+    }, [dispatch]);
 
-  // Fetch dropdown options
-  useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        setIsLoading(true);
-        
-        // In a real app, these would be API calls
-        // Simulating API responses with timeouts
-        setTimeout(() => {
-          setOptions({
-            units: ['Units', 'Cases', 'Pallets', 'Kg', 'Liters'],
-            materials: ['Material A', 'Material B', 'Material C', 'Material D'],
-            itemGroups: ['Group 1', 'Group 2', 'Group 3', 'Group 4'],
-            items: ['Item 1', 'Item 2', 'Item 3', 'Item 4'],
-            customers: ['Unilever', 'Nestle', 'P&G', 'Coca-Cola', 'PepsiCo'],
-            allProducts: ['Product A', 'Product B', 'Product C', 'Product D', 'Product E'],
-            allSuppliers: ['Supplier A', 'Supplier B', 'Supplier C', 'Supplier D', 'Supplier E']
-          });
-          setIsLoading(false);
-        }, 1000);
-      } catch (error) {
-        console.error('Error fetching options:', error);
-        setIsLoading(false);
-      }
+    useEffect(() => {
+        dispatch(fetchCustomerProducts(formData.customer || null));
+    }, [dispatch, formData.customer]);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+        if (formErrors[name]) setFormErrors({ ...formErrors, [name]: '' });
     };
 
-    fetchOptions();
-  }, []);
+    const handleProductSelect = (product) => {
+        if (selectedProducts.includes(product)) {
+            setSelectedProducts(selectedProducts.filter(p => p !== product));
+            const updated = { ...assignedSuppliers };
+            delete updated[product];
+            setAssignedSuppliers(updated);
+        } else {
+            setSelectedProducts([...selectedProducts, product]);
+        }
+    };
 
-  // Get products for selected customer
-  useEffect(() => {
-    if (formData.customer) {
-      // In a real app, this would be an API call to get customer's products
-      // For demo, we'll simulate with the first 3 products
-      const customerProducts = options.allProducts.slice(0, 3);
-      setCustomerProducts(customerProducts);
-    } else {
-      setCustomerProducts([]);
-    }
-  }, [formData.customer, options.allProducts]);
+    const handleSupplierAssignment = (product, supplier) => {
+        setAssignedSuppliers({ ...assignedSuppliers, [product]: supplier });
+    };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    
-    // Clear errors when field is updated
-    if (formErrors[name]) {
-      setFormErrors({ ...formErrors, [name]: '' });
-    }
-  };
+    const validateForm = () => {
+        const errors = {};
+        const fields = ['unit', 'material', 'itemGroup', 'item', 'customer', 'month'];
+        fields.forEach(f => { if (!formData[f]) errors[f] = `${f} is required`; });
+        if (selectedProducts.length === 0) errors.products = 'At least one product must be selected';
+        selectedProducts.forEach(p => {
+            if (!assignedSuppliers[p]) errors.suppliers = `Supplier not assigned for ${p}`;
+        });
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
 
-  const handleProductSelect = (product) => {
-    if (selectedProducts.includes(product)) {
-      setSelectedProducts(selectedProducts.filter(p => p !== product));
-      
-      // Remove supplier assignment if product is deselected
-      const newAssignedSuppliers = { ...assignedSuppliers };
-      delete newAssignedSuppliers[product];
-      setAssignedSuppliers(newAssignedSuppliers);
-    } else {
-      setSelectedProducts([...selectedProducts, product]);
-    }
-  };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!validateForm()) return;
 
-  const handleSupplierAssignment = (product, supplier) => {
-    setAssignedSuppliers({
-      ...assignedSuppliers,
-      [product]: supplier
-    });
-  };
+        const kpiRecords = selectedProducts.map(product => ({
+            month: new Date(formData.month).toISOString().split('T')[0],
+            customer: formData.customer,
+            product,
+            supplier: assignedSuppliers[product],
+            uom: formData.unit,
+            quantity: 0,
+            asp: 0
+        }));
 
-  const validateForm = () => {
-    const errors = {};
-    
-    if (!formData.unit) errors.unit = 'Unit is required';
-    if (!formData.material) errors.material = 'Material is required';
-    if (!formData.itemGroup) errors.itemGroup = 'Item Group is required';
-    if (!formData.item) errors.item = 'Item is required';
-    if (!formData.customer) errors.customer = 'Customer is required';
-    
-    if (selectedProducts.length === 0) {
-      errors.products = 'At least one product must be selected';
-    }
-    
-    // Check if all selected products have suppliers assigned
-    selectedProducts.forEach(product => {
-      if (!assignedSuppliers[product]) {
-        errors.suppliers = `Supplier not assigned for ${product}`;
-      }
-    });
-    
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+        try {
+            await dispatch(createBulkKpi(kpiRecords)).unwrap();
+            setFormData({ unit: '', material: '', itemGroup: '', item: '', customer: '', month: new Date().toISOString().split('T')[0] });
+            setSelectedProducts([]);
+            setAssignedSuppliers({});
+            setSuccessMessage('KPI setup created successfully!');
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            console.error('Creation failed:', err);
+            setFormErrors({ submit: 'Failed to create KPI records. Please try again.' });
+        }
+    };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-    
-    // Create KPI records for each product-supplier combination
-    selectedProducts.forEach(product => {
-      const newKPI = {
-        month: new Date().toLocaleDateString('en-GB', { 
-          day: '2-digit', 
-          month: 'short', 
-          year: 'numeric' 
-        }),
-        customer: formData.customer,
-        product: product,
-        supplier: assignedSuppliers[product],
-        uom: formData.unit,
-        quantity: 0, // Default to 0, user can edit in table view
-        asp: 0 // Default to 0, user can edit in table view
-      };
-      
-      onAddKPI(newKPI);
-    });
-    
-    // Reset form
-    setFormData({
-      unit: '',
-      material: '',
-      itemGroup: '',
-      item: '',
-      customer: '',
-      products: [],
-      suppliers: {}
-    });
-    setSelectedProducts([]);
-    setAssignedSuppliers({});
-    
-    setSuccessMessage('KPI setup created successfully!');
-    setTimeout(() => setSuccessMessage(''), 3000);
-  };
+    const activeKpis = kpiData.length;
+    const uniqueCustomers = new Set(kpiData.map(k => k.customer)).size;
+    const uniqueProducts = new Set(kpiData.map(k => k.product)).size;
+    console.log('customer pro Data:', customerProducts.data);
 
-  return (
-    <div className="kpi-setup-form">
-      <h2>KPI Setup Configuration</h2>
-      
-      {isLoading ? (
-        <div className="loading">
-          <div className="spinner"></div>
-          <p>Loading options...</p>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <div className="form-section">
-            <div className="form-group">
-              <label>Unit of Measure (UOM)</label>
-              <select 
-                name="unit" 
-                value={formData.unit}
-                onChange={handleInputChange}
-                className={formErrors.unit ? 'error' : ''}
-              >
-                <option value="">Select UOM</option>
-                {options.units.map(unit => (
-                  <option key={unit} value={unit}>{unit}</option>
-                ))}
-              </select>
-              {formErrors.unit && <p className="error-message">{formErrors.unit}</p>}
-            </div>
-            
-            <div className="form-group">
-              <label>Material</label>
-              <select 
-                name="material" 
-                value={formData.material}
-                onChange={handleInputChange}
-                className={formErrors.material ? 'error' : ''}
-              >
-                <option value="">Select Material</option>
-                {options.materials.map(material => (
-                  <option key={material} value={material}>{material}</option>
-                ))}
-              </select>
-              {formErrors.material && <p className="error-message">{formErrors.material}</p>}
-            </div>
-          </div>
-          
-          <div className="form-section">
-            <div className="form-group">
-              <label>Item Group</label>
-              <select 
-                name="itemGroup" 
-                value={formData.itemGroup}
-                onChange={handleInputChange}
-                className={formErrors.itemGroup ? 'error' : ''}
-              >
-                <option value="">Select Item Group</option>
-                {options.itemGroups.map(group => (
-                  <option key={group} value={group}>{group}</option>
-                ))}
-              </select>
-              {formErrors.itemGroup && <p className="error-message">{formErrors.itemGroup}</p>}
-            </div>
-            
-            <div className="form-group">
-              <label>Item</label>
-              <select 
-                name="item" 
-                value={formData.item}
-                onChange={handleInputChange}
-                className={formErrors.item ? 'error' : ''}
-              >
-                <option value="">Select Item</option>
-                {options.items.map(item => (
-                  <option key={item} value={item}>{item}</option>
-                ))}
-              </select>
-              {formErrors.item && <p className="error-message">{formErrors.item}</p>}
-            </div>
-          </div>
-          
-          <div className="form-section customer-section">
-            <div className="form-group">
-              <label>Customer</label>
-              <select 
-                name="customer" 
-                value={formData.customer}
-                onChange={handleInputChange}
-                className={formErrors.customer ? 'error' : ''}
-              >
-                <option value="">Select Customer</option>
-                {options.customers.map(customer => (
-                  <option key={customer} value={customer}>{customer}</option>
-                ))}
-              </select>
-              {formErrors.customer && <p className="error-message">{formErrors.customer}</p>}
-            </div>
-            
-            <div className="customer-products">
-              <label>Assigned Products</label>
-              {formData.customer ? (
-                <div className="product-list">
-                  {customerProducts.length > 0 ? (
-                    customerProducts.map(product => (
-                      <div 
-                        key={product} 
-                        className={`product-item ${selectedProducts.includes(product) ? 'selected' : ''}`}
-                        onClick={() => handleProductSelect(product)}
-                      >
-                        {product}
-                      </div>
-                    ))
-                  ) : (
-                    <p>No products assigned to this customer</p>
-                  )}
+
+    return (
+        <div className="bg-white rounded-xl shadow-md p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">KPI Setup Configuration</h2>
+
+            {loading ? (
+                <div className="flex flex-col items-center justify-center py-10">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                    <p className="mt-4 text-gray-600">Loading options...</p>
                 </div>
-              ) : (
-                <p>Select a customer to view assigned products</p>
-              )}
-              {formErrors.products && <p className="error-message">{formErrors.products}</p>}
-            </div>
-          </div>
-          
-          {selectedProducts.length > 0 && (
-            <div className="form-section supplier-assignment">
-              <h3>Supplier Assignment</h3>
-              <p>Assign a supplier to each selected product:</p>
-              
-              {selectedProducts.map(product => (
-                <div key={product} className="supplier-row">
-                  <div className="product-label">{product}</div>
-                  <select 
-                    value={assignedSuppliers[product] || ''}
-                    onChange={(e) => handleSupplierAssignment(product, e.target.value)}
-                    className={!assignedSuppliers[product] ? 'error' : ''}
-                  >
-                    <option value="">Select Supplier</option>
-                    {options.allSuppliers.map(supplier => (
-                      <option key={supplier} value={supplier}>{supplier}</option>
-                    ))}
-                  </select>
+            ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Unit of Measure (UOM)</label>
+                            <select
+                                name='unit'
+                                value={formData.unit}
+                                onChange={handleInputChange}
+                                className={`w-full p-2 border rounded-md ${formErrors.unit ? 'border-red-500' : 'border-gray-300'}`}
+                            >
+                                <option value="">Select unit</option>
+                                {options.units.map(opt => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                            </select>
+                            {formErrors.unit && <p className="mt-1 text-sm text-red-600">{formErrors.unit}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                            <select
+                                name="customer"
+                                value={formData.customer}
+                                onChange={handleInputChange}
+                                className={`w-full p-2 border rounded-md ${formErrors.customer ? 'border-red-500' : 'border-gray-300'}`}
+                            >
+                                <option value="">Select Customer</option>
+
+                                {/* {options?.customers?.data.map(customer => (
+                                    <option key={customer.id} value={customer.id}>{customer.name}</option>
+                                ))} */}
+
+                                {Array.isArray(options?.customers?.data) && options.customers.data.length > 0 ? (
+                                    options.customers.data.map(customer => (
+                                        <option key={customer.id} value={customer.id}>{customer.name}</option>
+                                    ))
+                                ) : (
+                                    <option disabled>No customers available</option>
+                                )}
+                            </select>
+                            {formErrors.customer && <p className="mt-1 text-sm text-red-600">{formErrors.customer}</p>}
+                        </div>
+
+                    </div>
+
+                    <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Products</label>
+                        {formData.customer ? (
+                            Array.isArray(customerProducts?.data) && customerProducts.data.length > 0 ? (
+                                <div className="flex flex-wrap gap-2">
+                                    {customerProducts.data.map(product => (
+                                        <button
+                                            key={product.id}
+                                            type="button"
+                                            onClick={() => handleProductSelect(product.id)}
+                                            className={`px-3 py-1 rounded-full text-sm font-medium ${selectedProducts.includes(product.id) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                }`}
+                                        >
+                                            {product.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500 italic">No products assigned to this customer</p>
+                            )
+                        ) : (
+                            <p className="text-gray-500 italic">Select a customer to view assigned products</p>
+                        )}
+                        {formErrors.products && <p className="mt-1 text-sm text-red-600">{formErrors.products}</p>}
+                    </div>
+
+                    {selectedProducts.length > 0 && (
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <h3 className="text-lg font-medium text-gray-800 mb-3">Supplier Assignment</h3>
+                            <p className="text-gray-600 mb-4">Assign a supplier to each selected product:</p>
+                            <div className="space-y-3">
+                                {selectedProducts.map(productId => {
+                                    const productDetails = customerProducts.data.find(p => p.id === productId);
+                                    return (
+                                        <div key={productId} className="flex items-center">
+                                            <span className="w-32 font-medium text-gray-700">
+                                                {productDetails?.name || productId}
+                                                <span className="block text-xs text-gray-500">Code: {productDetails?.code}</span>
+                                            </span>
+                                            <select
+                                                value={assignedSuppliers[productId] || ''}
+                                                onChange={(e) => handleSupplierAssignment(productId, e.target.value)}
+                                                className={`flex-1 p-2 border rounded-md ${!assignedSuppliers[productId] ? 'border-red-500' : 'border-gray-300'}`}
+                                            >
+                                                <option value="">Select Supplier</option>
+                                                {options.allSuppliers.map(supplier => (
+                                                    <option key={supplier} value={supplier}>{supplier}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            {formErrors.suppliers && <p className="mt-2 text-sm text-red-600">{formErrors.suppliers}</p>}
+                        </div>
+                    )}
+
+                    <div className="flex justify-end">
+                        <button type="submit" className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700">Create KPI Setup</button>
+                    </div>
+                    {successMessage && <div className="mt-4 p-3 bg-green-100 text-green-700 rounded-md">{successMessage}</div>}
+                    {formErrors.submit && <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">{formErrors.submit}</div>}
+                </form>
+            )}
+
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-blue-50 rounded-lg p-4 text-center">
+                    <p className="text-3xl font-bold text-blue-600">{activeKpis}</p>
+                    <p className="text-gray-600">Active KPIs</p>
                 </div>
-              ))}
-              
-              {formErrors.suppliers && <p className="error-message">{formErrors.suppliers}</p>}
+                <div className="bg-green-50 rounded-lg p-4 text-center">
+                    <p className="text-3xl font-bold text-green-600">{uniqueCustomers}</p>
+                    <p className="text-gray-600">Customers</p>
+                </div>
+                <div className="bg-purple-50 rounded-lg p-4 text-center">
+                    <p className="text-3xl font-bold text-purple-600">{uniqueProducts}</p>
+                    <p className="text-gray-600">Products</p>
+                </div>
             </div>
-          )}
-          
-          <div className="form-actions">
-            <button type="submit" className="submit-btn">Create KPI Setup</button>
-          </div>
-          
-          {successMessage && <div className="success-message">{successMessage}</div>}
-        </form>
-      )}
-      
-      <div className="stats-summary">
-        <div className="stat-card">
-          <h3>{kpiData.length}</h3>
-          <p>Active KPIs</p>
         </div>
-        <div className="stat-card">
-          <h3>{new Set(kpiData.map(kpi => kpi.customer)).size}</h3>
-          <p>Customers</p>
-        </div>
-        <div className="stat-card">
-          <h3>{new Set(kpiData.map(kpi => kpi.product)).size}</h3>
-          <p>Products</p>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default KPISetupForm;

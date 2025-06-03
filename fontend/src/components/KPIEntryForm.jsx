@@ -1,182 +1,236 @@
-import React, { useState } from "react";
-import axios from "axios";
+// KPISetupForm.jsx
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+    fetchOptions,
+    fetchCustomerProducts,
+    fetchKpiData,
+    createBulkKpi
+} from './store';
 
-export default function KPIEntryForm() {
-  const [selectedMonth, setSelectedMonth] = useState("2025-06");
-  const [entriesByMonth, setEntriesByMonth] = useState({
-    "2025-06": [
-      {
-        customer_id: 1,
-        customer_name: "Unilever",
-        product_id: 1,
-        product_name: "Product A",
-        supplier_id: 1,
-        supplier_name: "Supplier A",
-        uom: "Kg",
-        month: "2025-06-01",
-        quantity: 2,
-        asp: 4,
-        total_value: 8
-      },
-      {
-        customer_id: 2,
-        customer_name: "Nestle",
-        product_id: 2,
-        product_name: "Product B",
-        supplier_id: 2,
-        supplier_name: "Supplier B",
-        uom: "Ltr",
-        month: "2025-06-01",
-        quantity: 3,
-        asp: 5,
-        total_value: 15
-      }
-    ]
-  });
+const KPISetupForm = () => {
+    const dispatch = useDispatch();
+    const { options, customerProducts, loading, kpiData } = useSelector(state => state.app);
 
-  const currentEntries = entriesByMonth[selectedMonth] || [];
+    const [formData, setFormData] = useState({
+        unit: '', material: '', itemGroup: '', item: '', customer: '',
+        month: new Date().toISOString().split('T')[0]
+    });
+    const [selectedProducts, setSelectedProducts] = useState([]);
+    const [assignedSuppliers, setAssignedSuppliers] = useState({});
+    const [formErrors, setFormErrors] = useState({});
+    const [successMessage, setSuccessMessage] = useState('');
 
-  const handleMonthChange = (e) => {
-    const monthValue = e.target.value;
-    setSelectedMonth(monthValue);
-    if (!entriesByMonth[monthValue]) {
-      setEntriesByMonth((prev) => ({
-        ...prev,
-        [monthValue]: []
-      }));
-    }
-  };
+    useEffect(() => {
+        dispatch(fetchOptions());
+        dispatch(fetchKpiData());
+    }, [dispatch]);
 
-  const handleChange = (index, field, value) => {
-    const updated = [...currentEntries];
-    updated[index][field] = field === "quantity" || field === "asp" ? parseFloat(value) : value;
-    updated[index].total_value = updated[index].quantity * updated[index].asp;
-    updated[index].month = selectedMonth + "-01";
-    setEntriesByMonth((prev) => ({
-      ...prev,
-      [selectedMonth]: updated
-    }));
-  };
+    useEffect(() => {
+        dispatch(fetchCustomerProducts(formData.customer || null));
+    }, [dispatch, formData.customer]);
 
-  const handleSubmit = async () => {
-    try {
-      const payload = currentEntries.map(({ customer_name, product_name, supplier_name, ...e }) => e);
-      await axios.post("/api/kpi-entries", { entries: payload });
-      alert("KPI entries created successfully");
-    } catch (error) {
-      console.error(error);
-      alert("Error saving KPI entries");
-    }
-  };
-
-  const handleAddRow = () => {
-    const newEntry = {
-      customer_id: 0,
-      customer_name: "",
-      product_id: 0,
-      product_name: "",
-      supplier_id: 0,
-      supplier_name: "",
-      uom: "",
-      month: selectedMonth + "-01",
-      quantity: 0,
-      asp: 0,
-      total_value: 0
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+        if (formErrors[name]) setFormErrors({ ...formErrors, [name]: '' });
     };
-    setEntriesByMonth((prev) => ({
-      ...prev,
-      [selectedMonth]: [...currentEntries, newEntry]
-    }));
-  };
 
-  return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold text-orange-600 mb-4">KPI Entry Form</h2>
+    const handleProductSelect = (product) => {
+        if (selectedProducts.includes(product)) {
+            setSelectedProducts(selectedProducts.filter(p => p !== product));
+            const updated = { ...assignedSuppliers };
+            delete updated[product];
+            setAssignedSuppliers(updated);
+        } else {
+            setSelectedProducts([...selectedProducts, product]);
+        }
+    };
 
-      <div className="mb-4 flex gap-4 items-center">
-        <label className="font-medium">Select Month:</label>
-        <input
-          type="month"
-          value={selectedMonth}
-          onChange={handleMonthChange}
-          className="border px-2 py-1"
-        />
-        <button
-          className="bg-blue-600 text-white px-3 py-1 rounded"
-          onClick={handleAddRow}
-        >
-          + Add Row
-        </button>
-      </div>
+    const handleSupplierAssignment = (product, supplier) => {
+        setAssignedSuppliers({ ...assignedSuppliers, [product]: supplier });
+    };
 
-      <table className="w-full border text-sm">
-        <thead className="bg-gray-100">
-          <tr>
-            <th>Month</th>
-            <th>Customer</th>
-            <th>Product</th>
-            <th>Supplier</th>
-            <th>UOM</th>
-            <th>Quantity</th>
-            <th>ASP</th>
-            <th>Total Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentEntries.map((entry, i) => (
-            <tr key={i} className="text-center border-b">
-              <td>{new Date(entry.month).toLocaleDateString()}</td>
-              <td>{entry.customer_name}</td>
-              <td>{entry.product_name}</td>
-              <td>{entry.supplier_name}</td>
-              <td>
-                <select
-                  value={entry.uom}
-                  onChange={(e) => handleChange(i, "uom", e.target.value)}
-                  className="border px-2 py-1"
-                >
-                  <option value="">Select</option>
-                  <option value="Kg">Kg</option>
-                  <option value="Ltr">Ltr</option>
-                  <option value="Pcs">Pcs</option>
-                </select>
-              </td>
-              <td>
-                <input
-                  type="number"
-                  value={entry.quantity}
-                  onChange={(e) => handleChange(i, "quantity", e.target.value)}
-                  className="border px-2 py-1 w-16"
-                />
-              </td>
-              <td>
-                <input
-                  type="number"
-                  value={entry.asp}
-                  onChange={(e) => handleChange(i, "asp", e.target.value)}
-                  className="border px-2 py-1 w-16"
-                />
-              </td>
-              <td>{entry.total_value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    const validateForm = () => {
+        const errors = {};
+        const fields = ['unit', 'material', 'itemGroup', 'item', 'customer', 'month'];
+        fields.forEach(f => { if (!formData[f]) errors[f] = `${f} is required`; });
+        if (selectedProducts.length === 0) errors.products = 'At least one product must be selected';
+        selectedProducts.forEach(p => {
+            if (!assignedSuppliers[p]) errors.suppliers = `Supplier not assigned for ${p}`;
+        });
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
 
-      <div className="flex justify-end mt-4 gap-2">
-        <button
-          className="bg-gray-200 px-4 py-2 rounded"
-          onClick={() => window.location.reload()}
-        >
-          Cancel
-        </button>
-        <button
-          className="bg-green-600 text-white px-4 py-2 rounded"
-          onClick={handleSubmit}
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  );
-}
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!validateForm()) return;
+
+        const kpiRecords = selectedProducts.map(product => ({
+            month: new Date(formData.month).toISOString().split('T')[0],
+            customer: formData.customer,
+            product,
+            supplier: assignedSuppliers[product],
+            uom: formData.unit,
+            quantity: 0,
+            asp: 0
+        }));
+
+        try {
+            await dispatch(createBulkKpi(kpiRecords)).unwrap();
+            setFormData({ unit: '', material: '', itemGroup: '', item: '', customer: '', month: new Date().toISOString().split('T')[0] });
+            setSelectedProducts([]);
+            setAssignedSuppliers({});
+            setSuccessMessage('KPI setup created successfully!');
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            console.error('Creation failed:', err);
+            setFormErrors({ submit: 'Failed to create KPI records. Please try again.' });
+        }
+    };
+
+    // const activeKpis = kpiData.length ||0;
+    const activeKpis = 0;
+    const uniqueCustomers = new Set(kpiData.map(k => k.customer)).size;
+    const uniqueProducts = new Set(kpiData.map(k => k.product)).size;
+
+    return (
+        <div className="bg-white rounded-xl shadow-md p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">KPI Setup Configuration</h2>
+
+            {loading ? (
+                <div className="flex flex-col items-center justify-center py-10">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                    <p className="mt-4 text-gray-600">Loading options...</p>
+                </div>
+            ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* {['unit'].map((field, idx) => ( */}
+                            <div >
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{field}</label>
+                                <select
+                                    name="unit"
+                                    value={formData[unit]}
+                                    onChange={handleInputChange}
+                                    className={`w-full p-2 border rounded-md ${formErrors[field] ? 'border-red-500' : 'border-gray-300'}`}
+                                >
+                                    <option value="">Select {field}</option>
+                                    {['Units', 'Cases', 'Pallets', 'Kg', 'Liters'].map(opt => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
+                                {formErrors[field] && <p className="mt-1 text-sm text-red-600">{formErrors[field]}</p>}
+                            </div>
+                        {/* ))} */}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                            <select
+                                name="customer"
+                                value={formData.customer}
+                                onChange={handleInputChange}
+                                className={`w-full p-2 border rounded-md ${formErrors.customer ? 'border-red-500' : 'border-gray-300'}`}
+                            >
+                                <option value="">Select Customer</option>
+                                {options.data.map(customer => (
+                                    <option key={customer} value={customer}>{customer}</option>
+                                ))}
+                            </select>
+                            {formErrors.customer && <p className="mt-1 text-sm text-red-600">{formErrors.customer}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Month</label>
+                            <input
+                                type="month"
+                                name="month"
+                                value={formData.month}
+                                onChange={handleInputChange}
+                                className={`w-full p-2 border rounded-md ${formErrors.month ? 'border-red-500' : 'border-gray-300'}`}
+                            />
+                            {formErrors.month && <p className="mt-1 text-sm text-red-600">{formErrors.month}</p>}
+                        </div>
+                    </div>
+
+                    <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Products</label>
+                        {formData.customer ? (
+                            customerProducts.length > 0 ? (
+                                <div className="flex flex-wrap gap-2">
+                                    {customerProducts.map(product => (
+                                        <button
+                                            key={product}
+                                            type="button"
+                                            onClick={() => handleProductSelect(product)}
+                                            className={`px-3 py-1 rounded-full text-sm font-medium ${selectedProducts.includes(product) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                }`}
+                                        >
+                                            {product}
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500 italic">No products assigned to this customer</p>
+                            )
+                        ) : (
+                            <p className="text-gray-500 italic">Select a customer to view assigned products</p>
+                        )}
+                        {formErrors.products && <p className="mt-1 text-sm text-red-600">{formErrors.products}</p>}
+                    </div>
+
+                    {selectedProducts.length > 0 && (
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <h3 className="text-lg font-medium text-gray-800 mb-3">Supplier Assignment</h3>
+                            <p className="text-gray-600 mb-4">Assign a supplier to each selected product:</p>
+                            <div className="space-y-3">
+                                {selectedProducts.map(product => (
+                                    <div key={product} className="flex items-center">
+                                        <span className="w-32 font-medium text-gray-700">{product}</span>
+                                        <select
+                                            value={assignedSuppliers[product] || ''}
+                                            onChange={(e) => handleSupplierAssignment(product, e.target.value)}
+                                            className={`flex-1 p-2 border rounded-md ${!assignedSuppliers[product] ? 'border-red-500' : 'border-gray-300'}`}
+                                        >
+                                            <option value="">Select Supplier</option>
+                                            {options.allSuppliers.map(supplier => (
+                                                <option key={supplier} value={supplier}>{supplier}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                ))}
+                            </div>
+                            {formErrors.suppliers && <p className="mt-2 text-sm text-red-600">{formErrors.suppliers}</p>}
+                        </div>
+                    )}
+
+                    <div className="flex justify-end">
+                        <button type="submit" className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700">Create KPI Setup</button>
+                    </div>
+                    {successMessage && <div className="mt-4 p-3 bg-green-100 text-green-700 rounded-md">{successMessage}</div>}
+                    {formErrors.submit && <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">{formErrors.submit}</div>}
+                </form>
+            )}
+
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-blue-50 rounded-lg p-4 text-center">
+                    <p className="text-3xl font-bold text-blue-600">{activeKpis}</p>
+                    <p className="text-gray-600">Active KPIs</p>
+                </div>
+                <div className="bg-green-50 rounded-lg p-4 text-center">
+                    <p className="text-3xl font-bold text-green-600">{uniqueCustomers}</p>
+                    <p className="text-gray-600">Customers</p>
+                </div>
+                <div className="bg-purple-50 rounded-lg p-4 text-center">
+                    <p className="text-3xl font-bold text-purple-600">{uniqueProducts}</p>
+                    <p className="text-gray-600">Products</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default KPISetupForm;
