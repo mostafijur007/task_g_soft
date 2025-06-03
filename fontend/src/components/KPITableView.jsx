@@ -22,6 +22,7 @@ const KPITableView = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    
     const grouped = kpiData.reduce((acc, item) => {
       const key = `${item.month}-${item.customer}-${item.product}`;
       if (!acc[key]) acc[key] = [];
@@ -93,10 +94,10 @@ const KPITableView = () => {
                     <tr key={item.id} className={item.deleted_at ? 'bg-red-50' : ''}>
                       {index === 0 && [
                         <td key="month" rowSpan={items.length} className="px-6 py-4 text-sm font-medium text-gray-900 align-top">{formatDate(item.month)}</td>,
-                        <td key="customer" rowSpan={items.length} className="px-6 py-4 text-sm text-gray-500 align-top">{item.customer}</td>,
-                        <td key="product" rowSpan={items.length} className="px-6 py-4 text-sm text-gray-500 align-top">{item.product}</td>
+                        <td key="customer" rowSpan={items.length} className="px-6 py-4 text-sm text-gray-500 align-top">{item.customer?.name || item.customer}</td>,
+                        <td key="product" rowSpan={items.length} className="px-6 py-4 text-sm text-gray-500 align-top">{item.product?.name || item.product}</td>
                       ]}
-                      <td className="px-6 py-4 text-sm text-gray-500">{item.supplier}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{item.supplier?.name || item.supplier}</td>
                       {editingId === item.id ? (
                         <>
                           <td className="px-6 py-4">
@@ -122,8 +123,8 @@ const KPITableView = () => {
                         <>
                           <td className="px-6 py-4 text-sm text-gray-500">{item.uom}</td>
                           <td className="px-6 py-4 text-sm text-gray-500">{item.quantity}</td>
-                          <td className="px-6 py-4 text-sm text-gray-500">{item.asp.toFixed(2)}</td>
-                          <td className="px-6 py-4 text-sm text-gray-500">{(item.quantity * item.asp).toFixed(2)}</td>
+                          <td className="px-6 py-4 text-sm text-gray-500">{item.asp}</td>
+                          <td className="px-6 py-4 text-sm text-gray-500">{(item.quantity * item.asp)}</td>
                           <td className="px-6 py-4 text-sm font-medium">
                             {!item.deleted_at && (
                               <div className="flex space-x-3">

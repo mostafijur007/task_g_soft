@@ -22,8 +22,8 @@ export const fetchCustomerProducts = createAsyncThunk(
   }
 );
 export const fetchKpiData = createAsyncThunk("app/fetchKpiData", async () => {
-  const response = await axios.get(`${API_URL}/kpi`);
-  return response.data;
+  const response = await axios.get(`${API_URL}/kpis`);
+  return response.data.data;
 });
 export const createBulkKpi = createAsyncThunk(
   "app/createBulkKpi",
@@ -107,10 +107,7 @@ const appSlice = createSlice({
         state.customerProducts = action.payload;
       })
       .addCase(fetchKpiData.fulfilled, (state, action) => {
-        const active = action.payload.filter((r) => !r.deleted_at);
-        const deleted = action.payload.filter((r) => r.deleted_at);
-        state.kpiData = active;
-        state.deletedRecords = deleted;
+        state.kpiData = action.payload;
       })
       .addCase(createBulkKpi.fulfilled, (state, action) => {
         state.kpiData = [...state.kpiData, ...action.payload];
