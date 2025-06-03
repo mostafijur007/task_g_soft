@@ -93,12 +93,11 @@ const KPISetupForm = () => {
     const activeKpis = kpiData.length;
     const uniqueCustomers = new Set(kpiData.map(k => k.customer)).size;
     const uniqueProducts = new Set(kpiData.map(k => k.product)).size;
-    console.log('customer pro Data:', customerProducts.data);
 
 
     return (
         <div className="bg-white rounded-xl shadow-md p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">KPI Setup Configuration</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">KPI Setup</h2>
 
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-10">
@@ -133,11 +132,6 @@ const KPISetupForm = () => {
                                 className={`w-full p-2 border rounded-md ${formErrors.customer ? 'border-red-500' : 'border-gray-300'}`}
                             >
                                 <option value="">Select Customer</option>
-
-                                {/* {options?.customers?.data.map(customer => (
-                                    <option key={customer.id} value={customer.id}>{customer.name}</option>
-                                ))} */}
-
                                 {Array.isArray(options?.customers?.data) && options.customers.data.length > 0 ? (
                                     options.customers.data.map(customer => (
                                         <option key={customer.id} value={customer.id}>{customer.name}</option>
