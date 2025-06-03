@@ -7,6 +7,7 @@ import {
   fetchKpiData,
   createBulkKpi,
   fetchSuppliers,
+  assignSupplierToProducts,  // Add this import
 } from "../redux/store";
 
 const KPISetupForm = () => {
@@ -54,9 +55,23 @@ const KPISetupForm = () => {
     }
   };
 
-  const handleSupplierAssignment = (product, supplier) => {
-    setAssignedSuppliers({ ...assignedSuppliers, [product]: supplier });
-  };
+  const handleSupplierAssignment = async (productId, supplierId) => {
+    try {
+      await dispatch(assignSupplierToProducts({
+        supplier_ids: [supplierId],
+        product_id: productId
+      })).unwrap();
+      
+      setAssignedSuppliers({ ...assignedSuppliers, [productId]: supplierId });
+      setSuccessMessage("Supplier assigned successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      console.error("Supplier assignment failed:", err);
+      setFormErrors({
+        submit: "Failed to assign supplier. Please try again." // Error message is not specific to the product
+      });
+    }
+};
 
   const validateForm = () => {
     const errors = {};
@@ -241,31 +256,46 @@ const KPISetupForm = () => {
                     (p) => p.id === productId
                   );
                   return (
-                    <div key={productId} className="flex items-center">
+                    <div key={productId} className="flex items-center space-x-2">
                       <span className="w-32 font-medium text-gray-700">
                         {productDetails?.name || productId}
                         <span className="block text-xs text-gray-500">
                           Code: {productDetails?.code}
                         </span>
                       </span>
-                      <select
-                        value={assignedSuppliers[productId] || ""}
-                        onChange={(e) =>
-                          handleSupplierAssignment(productId, e.target.value)
-                        }
-                        className={`flex-1 p-2 border rounded-md ${
-                          !assignedSuppliers[productId]
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                      >
-                        <option value="">Select Supplier</option>
-                        {options.allSuppliers.map((supplier) => (
-                          <option key={supplier.id} value={supplier.id}>
-                            {supplier.name}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex-1 flex space-x-2">
+                        <select
+                          value={assignedSuppliers[productId] || ""}
+                          onChange={(e) => setAssignedSuppliers({ 
+                            ...assignedSuppliers, 
+                            [productId]: e.target.value 
+                          })}
+                          className={`flex-1 p-2 border rounded-md ${
+                            !assignedSuppliers[productId]
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          <option value="">Select Supplier</option>
+                          {options.allSuppliers.map((supplier) => (
+                            <option key={supplier.id} value={supplier.id}>
+                              {supplier.name}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => handleSupplierAssignment(productId, assignedSuppliers[productId])}
+                          disabled={!assignedSuppliers[productId]}
+                          className={`px-4 py-2 rounded-md ${
+                            assignedSuppliers[productId]
+                              ? "bg-blue-600 text-white hover:bg-blue-700"
+                              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          }`}
+                        >
+                          Assign
+                        </button>
+                      </div>
                     </div>
                   );
                 })}

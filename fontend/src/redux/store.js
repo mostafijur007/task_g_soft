@@ -62,6 +62,16 @@ export const fetchSuppliers = createAsyncThunk(
   }
 );
 
+export const assignSupplierToProducts = createAsyncThunk(
+  "app/assignSupplierToProducts",
+  async ({ supplier_ids, product_id }) => {
+    const response = await axios.post(`${API_URL}/product-suppliers/${product_id}`, {
+      supplier_ids,
+    });
+    return { product_id, supplier_ids };
+  }
+);
+
 // Slice
 const appSlice = createSlice({
   name: "app",
@@ -134,6 +144,14 @@ const appSlice = createSlice({
       })
       .addCase(fetchSuppliers.fulfilled, (state, action) => {
         state.options.allSuppliers = action.payload;
+      })
+      .addCase(assignSupplierToProducts.fulfilled, (state, action) => {
+        const { product_id, supplier_ids } = action.payload;
+        if (!state.productSuppliers) state.productSuppliers = {};
+        state.productSuppliers[product_id] = supplier_ids;
+      })
+      .addCase(assignSupplierToProducts.rejected, (state, action) => {
+        state.error = action.error.message;
       });
   },
 });
