@@ -1,4 +1,3 @@
-// KPITableView.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -19,6 +18,7 @@ const KPITableView = () => {
   const [groupedData, setGroupedData] = useState({});
   const [isGlobalEditing, setIsGlobalEditing] = useState(false);
   const [editedRows, setEditedRows] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     dispatch(fetchKpiData());
@@ -57,9 +57,12 @@ const KPITableView = () => {
 
   const handleSoftDelete = (id) => dispatch(softDeleteRecord(id));
   const handleRestore = async (id) => {
-    await dispatch(restoreRecord(id)); 
+    await dispatch(restoreRecord(id));
     await dispatch(fetchKpiData());
     await dispatch(fetchTrashedKpis());
+    setSuccessMessage("Record restored successfully!");
+    setTimeout(() => setSuccessMessage(""), 3000);
+    window.scrollTo(0, 0);
   };
 
   const formatDate = (dateString) => {
@@ -89,6 +92,8 @@ const KPITableView = () => {
       await dispatch(fetchKpiData());
       setIsGlobalEditing(false);
       setEditedRows({});
+      setSuccessMessage("KPI save successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
       console.error("Failed to update records:", error);
     }
@@ -99,6 +104,11 @@ const KPITableView = () => {
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
+      {successMessage && (
+        <div className="my-4 p-3 bg-green-100 text-green-700 rounded-md">
+          {successMessage}
+        </div>
+      )}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-800">KPI Table View</h2>
         <div className="flex items-center space-x-4">
@@ -158,7 +168,7 @@ const KPITableView = () => {
                     "Quantity",
                     "ASP",
                     "Total Value",
-                    // "Actions",
+                    "Actions",
                   ].map((h) => (
                     <th
                       key={h}
@@ -248,6 +258,9 @@ const KPITableView = () => {
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {((editedRows[item.id]?.quantity || item.quantity) *
                           (editedRows[item.id]?.asp || item.asp)).toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+
                       </td>
 
                     </tr>
