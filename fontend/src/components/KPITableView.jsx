@@ -11,7 +11,7 @@ import {
 
 const KPITableView = () => {
   const dispatch = useDispatch();
-  const { kpiData, deletedRecords, loading, pagination, trashedKpis, trashedPagination } = useSelector(
+  const { kpiData, loading, pagination, trashedKpis, trashedPagination } = useSelector(
     (state) => state.app
   );
 
@@ -56,7 +56,11 @@ const KPITableView = () => {
   }, [kpiData]);
 
   const handleSoftDelete = (id) => dispatch(softDeleteRecord(id));
-  const handleRestore = (id) => dispatch(restoreRecord(id));
+  const handleRestore = async (id) => {
+    await dispatch(restoreRecord(id)); 
+    await dispatch(fetchKpiData());
+    await dispatch(fetchTrashedKpis());
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -260,84 +264,6 @@ const KPITableView = () => {
               </p>
             </div>
           )}
-
-          {showDeleted && (
-            <div className="mt-10">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Deleted Records
-              </h3>
-              {trashedKpis.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        {[
-                          "Month",
-                          "Customer",
-                          "Product",
-                          "Supplier",
-                          "UOM",
-                          "Quantity",
-                          "ASP",
-                          "Total Value",
-                          "Actions",
-                        ].map((h) => (
-                          <th
-                            key={h}
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {trashedKpis.map((item) => (
-                        <tr key={item?.code} className="bg-red-50">
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            {formatDate(item?.month)}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            {item?.customer?.name || ''}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            {item?.product?.name || ''}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            {item?.supplier?.name || ''}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            {item?.uom || ''}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            {item?.quantity || ''}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            {item?.asp || ''}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            {(item.quantity || 1 * item.asp || 1)}
-                          </td>
-                          <td className="px-6 py-4 text-sm font-medium">
-                            <button
-                              onClick={() => handleRestore(item?.id)}
-                              className="text-green-600 hover:text-green-900"
-                            >
-                              Restore
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="py-8 text-center">
-                  <p className="text-gray-500">No deleted records found.</p>
-                </div>
-              )}
-            </div>
-          )}
         </>
       )}
 
@@ -435,6 +361,84 @@ const KPITableView = () => {
               </nav>
             </div>
           </div>
+        </div>
+      )}
+
+      {showDeleted && (
+        <div className="mt-10">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Deleted Records
+          </h3>
+          {trashedKpis.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    {[
+                      "Month",
+                      "Customer",
+                      "Product",
+                      "Supplier",
+                      "UOM",
+                      "Quantity",
+                      "ASP",
+                      "Total Value",
+                      "Actions",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {trashedKpis.map((item) => (
+                    <tr key={item?.code} className="bg-red-50">
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {formatDate(item?.month)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {item?.customer?.name || ''}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {item?.product?.name || ''}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {item?.supplier?.name || ''}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {item?.uom || ''}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {item?.quantity || ''}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {item?.asp || ''}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {(item.quantity || 1 * item.asp || 1)}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium">
+                        <button
+                          onClick={() => handleRestore(item?.id)}
+                          className="text-green-600 hover:text-green-900"
+                        >
+                          Restore
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="py-8 text-center">
+              <p className="text-gray-500">No deleted records found.</p>
+            </div>
+          )}
         </div>
       )}
     </div>
