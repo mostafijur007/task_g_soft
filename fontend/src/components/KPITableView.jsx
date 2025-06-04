@@ -18,6 +18,8 @@ const KPITableView = () => {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [groupedData, setGroupedData] = useState({});
+  const [isGlobalEditing, setIsGlobalEditing] = useState(false);
+  const [editedRows, setEditedRows] = useState({});
 
   useEffect(() => {
     dispatch(fetchKpiData());
@@ -88,21 +90,71 @@ const KPITableView = () => {
     });
   };
 
+  const handleGlobalEditChange = (id, field, value) => {
+    setEditedRows(prev => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        id,
+        [field]: field === "quantity" || field === "asp" ? parseFloat(value) : value
+      }
+    }));
+  };
+
+  const handleSaveAll = async () => {
+    try {
+      const entries = Object.values(editedRows);
+      await axios.post(`${API_URL}/kpi/bulk-update`, { entries });
+      await dispatch(fetchKpiData());
+      setIsGlobalEditing(false);
+      setEditedRows({});
+    } catch (error) {
+      console.error("Failed to update records:", error);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-800">KPI Table View</h2>
-        <label className="flex items-center space-x-2 mt-4 md:mt-0">
-          <input
-            type="checkbox"
-            checked={showDeleted}
-            onChange={() => setShowDeleted(!showDeleted)}
-            className="h-4 w-4 text-blue-600 rounded"
-          />
-          <span className="text-gray-700">Show Deleted Records</span>
-        </label>
+        <div className="flex items-center space-x-4">
+          {isGlobalEditing ? (
+            <>
+              <button
+                onClick={handleSaveAll}
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+              >
+                Save All
+              </button>
+              <button
+                onClick={() => {
+                  setIsGlobalEditing(false);
+                  setEditedRows({});
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setIsGlobalEditing(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Edit All
+            </button>
+          )}
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={showDeleted}
+              onChange={() => setShowDeleted(!showDeleted)}
+              className="h-4 w-4 text-blue-600 rounded"
+            />
+            <span className="text-gray-700">Show Deleted Records</span>
+          </label>
+        </div>
       </div>
-
       {loading ? (
         <div className="flex justify-center py-10">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
@@ -166,98 +218,54 @@ const KPITableView = () => {
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {item.supplier?.name || item.supplier}
                       </td>
-                      {editingId === item.id ? (
-                        <>
-                          <td className="px-6 py-4">
-                            <select
-                              name="uom"
-                              value={editForm.uom}
-                              onChange={handleEditChange}
-                              className="w-full p-1 border border-gray-300 rounded-md"
-                            >
-                              {[
-                                "Units",
-                                "Cases",
-                                "Pallets",
-                                "Kg",
-                                "Liters",
-                              ].map((unit) => (
-                                <option key={unit} value={unit}>
-                                  {unit}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="px-6 py-4">
-                            <input
-                              type="number"
-                              name="quantity"
-                              value={editForm.quantity}
-                              onChange={handleEditChange}
-                              min="0"
-                              step="1"
-                              className="w-full p-1 border border-gray-300 rounded-md"
-                            />
-                          </td>
-                          <td className="px-6 py-4">
-                            <input
-                              type="number"
-                              name="asp"
-                              value={editForm.asp}
-                              onChange={handleEditChange}
-                              min="0"
-                              step="0.01"
-                              className="w-full p-1 border border-gray-300 rounded-md"
-                            />
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            {(editForm.quantity * editForm.asp).toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 text-sm font-medium">
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={() => handleSave(item.id)}
-                                className="text-green-600 hover:text-green-900"
-                              >
-                                Save
-                              </button>
-                              <button
-                                onClick={handleCancelEdit}
-                                className="text-gray-600 hover:text-gray-900"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </td>
-                        </>
-                      ) : (
-                        <>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            {item.uom}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            {item.quantity}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            {item.asp}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            {item.quantity * item.asp}
-                          </td>
-                          {/* <td className="px-6 py-4 text-sm font-medium">
-                            {!item.deleted_at && (
-                              <div className="flex space-x-3">
-                                <button
-                                  onClick={() => handleSoftDelete(item.id)}
-                                  className="text-red-600 hover:text-red-900"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            )}
-                          </td> */}
-                        </>
-                      )}
+                      <td className="px-6 py-4">
+                        {isGlobalEditing ? (
+                          <select
+                            value={editedRows[item.id]?.uom || item.uom}
+                            onChange={(e) => handleGlobalEditChange(item.id, "uom", e.target.value)}
+                            className="w-full p-1 border border-gray-300 rounded-md"
+                          >
+                            {["Units", "Cases", "Pallets", "Kg", "Liters"].map((unit) => (
+                              <option key={unit} value={unit}>{unit}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          item.uom
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {isGlobalEditing ? (
+                          <input
+                            type="number"
+                            value={editedRows[item.id]?.quantity || item.quantity}
+                            onChange={(e) => handleGlobalEditChange(item.id, "quantity", e.target.value)}
+                            min="0"
+                            step="1"
+                            className="w-full p-1 border border-gray-300 rounded-md"
+                          />
+                        ) : (
+                          item.quantity
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {isGlobalEditing ? (
+                          <input
+                            type="number"
+                            value={editedRows[item.id]?.asp || item.asp}
+                            onChange={(e) => handleGlobalEditChange(item.id, "asp", e.target.value)}
+                            min="0"
+                            step="0.01"
+                            className="w-full p-1 border border-gray-300 rounded-md"
+                          />
+                        ) : (
+                          item.asp
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {((editedRows[item.id]?.quantity || item.quantity) *
+                          (editedRows[item.id]?.asp || item.asp)).toFixed(2)}
+                      </td>
+
                     </tr>
                   ))
                 )}
@@ -417,11 +425,10 @@ const KPITableView = () => {
                   <button
                     key={i + 1}
                     onClick={() => handlePageChange(i + 1)}
-                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                      pagination.currentPage === i + 1
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${pagination.currentPage === i + 1
                         ? "z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                         : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
-                    }`}
+                      }`}
                   >
                     {i + 1}
                   </button>
