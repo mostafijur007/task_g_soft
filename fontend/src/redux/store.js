@@ -185,7 +185,6 @@ const appSlice = createSlice({
         state.error = action.error.message;
       })
       .addCase(bulkUpdateKpi.fulfilled, (state, action) => {
-        state.kpiData = action.payload.data;
       }).addCase(fetchTrashedKpis.fulfilled, (state, action) => {
         state.trashedKpis = action.payload.data;
         state.trashedPagination = action.payload.meta;
