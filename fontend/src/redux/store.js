@@ -113,7 +113,7 @@ const appSlice = createSlice({
     deletedRecords: [],
     loading: false,
     error: null,
-    activeTab: "setup",
+    activeTab: "view",
     trashedKpis: [],
     trashedPagination: {},
   },
