@@ -10,4 +10,5 @@ interface KPIEntryRepositoryInterface
     public function update($id, array $data);
     public function delete($id);
     public function byMonth($month);
+    public function getAllTrashed();
 }

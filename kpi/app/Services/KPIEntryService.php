@@ -66,4 +66,9 @@ class KPIEntryService
 
         return $created;
     }
+
+    public function getTrashed()
+    {
+        return $this->repo->getAllTrashed();
+    }
 }

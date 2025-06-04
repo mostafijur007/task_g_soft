@@ -209,12 +209,156 @@ class KPIEntryController extends Controller
         return response()->json(['message' => 'Deleted successfully']);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/kpi/bulk",
+     *     summary="Create multiple KPI entries",
+     *     description="Bulk store multiple KPI entries at once.",
+     *     tags={"KPI Entries"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             required={"entries"},
+     *             @OA\Property(
+     *                 property="entries",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     required={"customer_id","product_id","supplier_id","month","uom","quantity","asp","total_value"},
+     *                     @OA\Property(property="customer_id", type="integer", example=1),
+     *                     @OA\Property(property="product_id", type="integer", example=5),
+     *                     @OA\Property(property="supplier_id", type="integer", example=2),
+     *                     @OA\Property(property="month", type="string", format="date", example="2025-06-01"),
+     *                     @OA\Property(property="uom", type="string", maxLength=10, example="units"),
+     *                     @OA\Property(property="quantity", type="number", format="float", minimum=0, example=100),
+     *                     @OA\Property(property="asp", type="number", format="float", minimum=0, example=45.5),
+     *                     @OA\Property(property="total_value", type="number", format="float", minimum=0, example=4550)
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="KPI entries created successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="KPI entries created successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=101),
+     *                     @OA\Property(property="code", type="string", example="KPI-2025-001"),
+     *                     @OA\Property(
+     *                         property="customer",
+     *                         type="object",
+     *                         nullable=true,
+     *                         @OA\Property(property="id", type="integer", example=11),
+     *                         @OA\Property(property="name", type="string", example="Acme Corp")
+     *                     ),
+     *                     @OA\Property(
+     *                         property="product",
+     *                         type="object",
+     *                         nullable=true,
+     *                         @OA\Property(property="id", type="integer", example=7),
+     *                         @OA\Property(property="name", type="string", example="Premium Widget")
+     *                     ),
+     *                     @OA\Property(
+     *                         property="supplier",
+     *                         type="object",
+     *                         nullable=true,
+     *                         @OA\Property(property="id", type="integer", example=3),
+     *                         @OA\Property(property="name", type="string", example="Global Supplies Ltd.")
+     *                     ),
+     *                     @OA\Property(property="month", type="string", example="2025-06"),
+     *                     @OA\Property(property="uom", type="string", example="units"),
+     *                     @OA\Property(property="quantity", type="integer", example=1200),
+     *                     @OA\Property(property="asp", type="number", format="float", example=42.5),
+     *                     @OA\Property(property="total_value", type="number", format="float", example=51000),
+     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-05-10T14:22:00Z"),
+     *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-05-20T10:33:00Z")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
     public function bulkStore(StoreKPIEntryRequest $request)
     {
         $entries = $this->service->bulkStore($request->validated()['entries']);
         return $this->success(
             KpiEntryResource::collection($entries),
             'KPI entries created successfully',
+            201
+        );
+    }
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/kpis/trashed",
+     *     summary="Get all trashed KPI entries",
+     *     tags={"KPIs"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Get all trashed KPI entries",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Kpi trashed entry retrieved successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=101),
+     *                     @OA\Property(property="code", type="string", example="KPI-2025-001"),
+     *                     @OA\Property(
+     *                         property="customer",
+     *                         type="object",
+     *                         nullable=true,
+     *                         @OA\Property(property="id", type="integer", example=11),
+     *                         @OA\Property(property="name", type="string", example="Acme Corp")
+     *                     ),
+     *                     @OA\Property(
+     *                         property="product",
+     *                         type="object",
+     *                         nullable=true,
+     *                         @OA\Property(property="id", type="integer", example=7),
+     *                         @OA\Property(property="name", type="string", example="Premium Widget")
+     *                     ),
+     *                     @OA\Property(
+     *                         property="supplier",
+     *                         type="object",
+     *                         nullable=true,
+     *                         @OA\Property(property="id", type="integer", example=3),
+     *                         @OA\Property(property="name", type="string", example="Global Supplies Ltd.")
+     *                     ),
+     *                     @OA\Property(property="month", type="string", example="2025-06"),
+     *                     @OA\Property(property="uom", type="string", example="units"),
+     *                     @OA\Property(property="quantity", type="integer", example=1200),
+     *                     @OA\Property(property="asp", type="number", format="float", example=42.5),
+     *                     @OA\Property(property="total_value", type="number", format="float", example=51000),
+     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-05-10T14:22:00Z"),
+     *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-05-20T10:33:00Z")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function trashed(Request $request)
+    {
+        $data = $this->service->getTrashed();
+
+        return $this->success(
+            KpiEntryResource::collection($data),
+            'Kpi trashed entry retrieved successfully',
             201
         );
     }
