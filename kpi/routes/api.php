@@ -28,6 +28,7 @@ Route::apiResource('kpis', KPIEntryController::class);
 Route::post('kpi/bulk', [KPIEntryController::class, 'bulkStore']);
 Route::put('/kpi/bulk-update', [KpiEntryController::class, 'bulkUpdate']);
 Route::get('kpi/trashed', [KPIEntryController::class, 'trashed']);
+Route::post('kpi/{id}/restore', [KPIEntryController::class, 'restore']);
 
 
 // Assignments (custom pivot logic, if applicable)

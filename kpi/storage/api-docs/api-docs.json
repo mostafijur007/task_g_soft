@@ -1192,6 +1192,103 @@
                 }
             }
         },
+        "/api/kpi/{id}/restore": {
+            "post": {
+                "tags": [
+                    "KPIs"
+                ],
+                "summary": "Restore a soft-deleted KPI entry",
+                "operationId": "64afc132f9b20838ea2e7ae02715c7a4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the soft-deleted KPI entry",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "KPI Entry restored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "KPI Entry restored successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "code": {
+                                                    "type": "string",
+                                                    "example": "KPI-0005"
+                                                },
+                                                "customer_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "product_id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "supplier_id": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "month": {
+                                                    "type": "string",
+                                                    "example": "2025-06-01"
+                                                },
+                                                "uom": {
+                                                    "type": "string",
+                                                    "example": "pcs"
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "example": 100
+                                                },
+                                                "asp": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 10.25
+                                                },
+                                                "total_value": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 1025
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "KPI Entry not found"
+                    }
+                }
+            }
+        },
         "/api/products": {
             "get": {
                 "tags": [

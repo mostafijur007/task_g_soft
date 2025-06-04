@@ -34,7 +34,7 @@ class KPIEntryRepository implements KPIEntryRepositoryInterface
         return KPIEntry::findOrFail($id)->delete();
     }
 
-    public function byMonth($perPage=10)
+    public function byMonth($perPage = 10)
     {
         return KPIEntry::with('customer', 'product', 'supplier')->where('month', $month)->paginate($perPage);
     }
@@ -42,5 +42,12 @@ class KPIEntryRepository implements KPIEntryRepositoryInterface
     public function getAllTrashed($perPage = 15)
     {
         return KPIEntry::with('customer', 'product', 'supplier')->onlyTrashed()->paginate($perPage);
+    }
+
+    public function restore($id)
+    {
+        $kpi = KPIEntry::withTrashed()->findOrFail($id);
+        $kpi->restore();
+        return $kpi;
     }
 }

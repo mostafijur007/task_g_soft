@@ -91,4 +91,9 @@ class KPIEntryService
         }
         return $updated;
     }
+
+    public function restore($id)
+    {
+        return $this->repo->restore($id);
+    }
 }

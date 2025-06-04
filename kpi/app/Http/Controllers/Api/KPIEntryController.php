@@ -141,7 +141,6 @@ class KPIEntryController extends Controller
     public function show($id)
     {
         return response()->json($this->service->find($id));
-        
     }
 
     /**
@@ -417,6 +416,55 @@ class KPIEntryController extends Controller
         return $this->success(
             KpiEntryResource::collection($entries)->response()->getData(true),
             'KPI entries updated successfully.',
+            200
+        );
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/kpi/{id}/restore",
+     *     summary="Restore a soft-deleted KPI entry",
+     *     tags={"KPIs"},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="The ID of the soft-deleted KPI entry",
+     *         @OA\Schema(type="integer", example=5)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="KPI Entry restored successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="KPI Entry restored successfully."),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=5),
+     *                 @OA\Property(property="code", type="string", example="KPI-0005"),
+     *                 @OA\Property(property="customer_id", type="integer", example=1),
+     *                 @OA\Property(property="product_id", type="integer", example=2),
+     *                 @OA\Property(property="supplier_id", type="integer", example=3),
+     *                 @OA\Property(property="month", type="string", example="2025-06-01"),
+     *                 @OA\Property(property="uom", type="string", example="pcs"),
+     *                 @OA\Property(property="quantity", type="integer", example=100),
+     *                 @OA\Property(property="asp", type="number", format="float", example=10.25),
+     *                 @OA\Property(property="total_value", type="number", format="float", example=1025.00),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="KPI Entry not found"
+     *     )
+     * )
+     */
+    public function restore($id)
+    {
+        $kpi = $this->service->restore($id);
+        return $this->success(
+            new KpiEntryResource($kpi),
+            'KPI Entry restored successfully.',
             200
         );
     }
