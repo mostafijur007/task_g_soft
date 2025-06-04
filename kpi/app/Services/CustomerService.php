@@ -14,9 +14,9 @@ class CustomerService
         $this->repo = $repo;
     }
 
-    public function getAll()
+    public function getAll($per_page = null)
     {
-        return $this->repo->all();
+        return $this->repo->all($per_page);
     }
 
     public function store($data)

@@ -15,23 +15,19 @@ Route::get('/user', function (Request $request) {
 Route::apiResource('customers', CustomerController::class);
 Route::post('customers/restore/{id}', [CustomerController::class, 'restore']);
 
-// Products CRUD
+// Products 
 Route::apiResource('products', ProductController::class);
-Route::post('products/restore/{id}', [ProductController::class, 'restore']); // Optional
+Route::post('products/restore/{id}', [ProductController::class, 'restore']);
 
-// Suppliers CRUD
+// Suppliers 
 Route::apiResource('suppliers', SupplierController::class);
-Route::post('suppliers/restore/{id}', [SupplierController::class, 'restore']); // Optional
+Route::post('suppliers/restore/{id}', [SupplierController::class, 'restore']);
 
 // KPI Entries
 Route::apiResource('kpis', KPIEntryController::class);
 Route::post('kpi/bulk', [KPIEntryController::class, 'bulkStore']);
-Route::put('/kpi/bulk-update', [KpiEntryController::class, 'bulkUpdate']);
-Route::get('kpi/trashed', [KPIEntryController::class, 'trashed']);
-Route::post('kpi/{id}/restore', [KPIEntryController::class, 'restore']);
 
-
-// Assignments (custom pivot logic, if applicable)
+// Assignments 
 Route::post('customer-products/{customerId}', [CustomerController::class, 'assignProducts']);
 Route::get('customer-products/{customerId}', [CustomerController::class, 'getAssignedProducts']);
 Route::delete('customer-products/{customerId}/{productId}', [CustomerController::class, 'removeProduct']);

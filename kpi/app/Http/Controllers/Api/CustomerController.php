@@ -55,14 +55,55 @@ class CustomerController extends Controller
     /**
      * @OA\Get(
      *     path="/api/customers",
+     *     summary="Get list of customers with pagination",
      *     tags={"Customers"},
-     *     summary="Get list of customers",
      *     @OA\Response(
      *         response=200,
-     *         description="Success",
+     *         description="Customers retrieved successfully",
      *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(ref="#/components/schemas/CustomerResource")
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Customers retrieved successfully"),
+     *             @OA\Property(
+     *                 property="links",
+     *                 type="object",
+     *                 @OA\Property(property="first", type="string", example="http://127.0.0.1:8000/api/customers?page=1"),
+     *                 @OA\Property(property="last", type="string", example="http://127.0.0.1:8000/api/customers?page=4"),
+     *                 @OA\Property(property="prev", type="string", nullable=true, example=null),
+     *                 @OA\Property(property="next", type="string", example="http://127.0.0.1:8000/api/customers?page=2")
+     *             ),
+     *             @OA\Property(
+     *                 property="meta",
+     *                 type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="from", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=4),
+     *                 @OA\Property(property="path", type="string", example="http://127.0.0.1:8000/api/customers"),
+     *                 @OA\Property(property="per_page", type="integer", example=15),
+     *                 @OA\Property(property="to", type="integer", example=15),
+     *                 @OA\Property(property="total", type="integer", example=55),
+     *                 @OA\Property(
+     *                     property="links",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         type="object",
+     *                         @OA\Property(property="url", type="string", nullable=true),
+     *                         @OA\Property(property="label", type="string"),
+     *                         @OA\Property(property="active", type="boolean")
+     *                     )
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="code", type="string", example="CUS-0001"),
+     *                     @OA\Property(property="name", type="string", example="Prof. Evie Keebler V"),
+     *                     @OA\Property(property="email", type="string", example="marguerite.hegmann@example.com"),
+     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-04 17:24:31")
+     *                 )
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -70,15 +111,21 @@ class CustomerController extends Controller
      *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="An error occurred")
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
      *         )
      *     )
      * )
      */
-    public function index()
+    public function index(Request $request)
     {
         $customers = $this->service->getAll();
-        return CustomerResource::collection($customers);
+        return $this->success(
+            CustomerResource::collection($customers)->response()->getData(true),
+            'Customers retrieved successfully',
+            201
+        );
     }
 
     /**
