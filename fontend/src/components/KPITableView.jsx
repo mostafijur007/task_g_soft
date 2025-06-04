@@ -10,9 +10,8 @@ import {
 
 const KPITableView = () => {
   const dispatch = useDispatch();
-  const { kpiData, loading, pagination, trashedKpis, trashedPagination } = useSelector(
-    (state) => state.app
-  );
+  const { kpiData, loading, pagination, trashedKpis, trashedPagination } =
+    useSelector((state) => state.app);
 
   const [showDeleted, setShowDeleted] = useState(false);
   const [groupedData, setGroupedData] = useState({});
@@ -55,15 +54,24 @@ const KPITableView = () => {
 
     // console.log("groupedData", grouped);
     const grouped = kpiData.reduce((acc, item) => {
-      const customerKey = typeof item.customer === "object" ? item.customer.id : item.customer;
-      const productKey = typeof item.product === "object" ? item.product.id : item.product;
-      const key = `${item.month}-${customerKey}-${productKey}`;
-
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(item);
+      const key = `${item.month}-${item.customer.id}-${item.product.id}`;
+      if (!acc[key]) {
+        acc[key] = {
+          month: item.month,
+          customer: item.customer.name,
+          product: item.product.name,
+          items: [],
+        };
+      }
+      acc[key].items.push({
+        supplier: item.supplier.name,
+        uom: item.uom,
+        quantity: item.quantity,
+        asp: item.asp,
+        total_value: item.total_value,
+      });
       return acc;
     }, {});
-
 
     setGroupedData(grouped);
   }, [kpiData]);
@@ -95,13 +103,14 @@ const KPITableView = () => {
   };
 
   const handleGlobalEditChange = (id, field, value) => {
-    setEditedRows(prev => ({
+    setEditedRows((prev) => ({
       ...prev,
       [id]: {
         ...prev[id],
         id,
-        [field]: field === "quantity" || field === "asp" ? parseFloat(value) : value
-      }
+        [field]:
+          field === "quantity" || field === "asp" ? parseFloat(value) : value,
+      },
     }));
   };
 
@@ -197,97 +206,126 @@ const KPITableView = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {Object.entries(groupedData).map(([key, items]) =>
-                  items.map((item, index) => (
-                    <tr
-                      key={item.id}
-                      className={item.deleted_at ? "bg-red-50" : ""}
-                    >
-                      {index === 0 && [
-                        <td
-                          key="month"
-                          rowSpan={items.length}
-                          className="px-6 py-4 text-sm font-medium text-gray-900 align-top"
-                        >
-                          {formatDate(item.month)}
-                        </td>,
-                        <td
-                          key="customer"
-                          rowSpan={items.length}
-                          className="px-6 py-4 text-sm text-gray-500 align-top"
-                        >
-                          {item.customer?.name || item.customer}
-                        </td>,
-                        <td
-                          key="product"
-                          rowSpan={items.length}
-                          className="px-6 py-4 text-sm text-gray-500 align-top"
-                        >
-                          {item.product?.name || item.product}
-                        </td>,
-                      ]}
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {item.supplier?.name || item.supplier}
-                      </td>
-                      <td className="px-6 py-4">
-                        {isGlobalEditing ? (
-                          <select
-                            value={editedRows[item.id]?.uom || item.uom}
-                            onChange={(e) => handleGlobalEditChange(item.id, "uom", e.target.value)}
-                            className="w-full p-1 border border-gray-300 rounded-md"
+                {groupedData &&
+                  Object.values(groupedData).map((group, groupIndex) =>
+                    group.items.map((item, itemIndex) => (
+                      <tr
+                        key={`${groupIndex}-${itemIndex}`}
+                        className={item.deleted_at ? "bg-red-50" : ""}
+                      >
+                        {itemIndex === 0 ? (
+                          <>
+                            <td
+                              className="px-6 py-4 text-sm font-medium text-gray-900 align-center"
+                              rowSpan={group.items.length}
+                            >
+                              {formatDate(group.month)}
+                            </td>
+                            <td
+                              className="px-6 py-4 text-sm text-gray-500 align-center"
+                              rowSpan={group.items.length}
+                            >
+                              {group.customer}
+                            </td>
+                            <td
+                              className="px-6 py-4 text-sm text-gray-500 align-center"
+                              rowSpan={group.items.length}
+                            >
+                              {group.product}
+                            </td>
+                          </>
+                        ) : null}
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          {item.supplier?.name || item.supplier}
+                        </td>
+                        <td className="px-6 py-4">
+                          {isGlobalEditing ? (
+                            <select
+                              value={editedRows[item.id]?.uom || item.uom}
+                              onChange={(e) =>
+                                handleGlobalEditChange(
+                                  item.id,
+                                  "uom",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full p-1 border border-gray-300 rounded-md"
+                            >
+                              {[
+                                "Units",
+                                "Cases",
+                                "Pallets",
+                                "Kg",
+                                "Liters",
+                              ].map((unit) => (
+                                <option key={unit} value={unit}>
+                                  {unit}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            item.uom
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {isGlobalEditing ? (
+                            <input
+                              type="number"
+                              value={
+                                editedRows[item.id]?.quantity || item.quantity
+                              }
+                              onChange={(e) =>
+                                handleGlobalEditChange(
+                                  item.id,
+                                  "quantity",
+                                  e.target.value
+                                )
+                              }
+                              min="0"
+                              step="1"
+                              className="w-full p-1 border border-gray-300 rounded-md"
+                            />
+                          ) : (
+                            item.quantity
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {isGlobalEditing ? (
+                            <input
+                              type="number"
+                              value={editedRows[item.id]?.asp || item.asp}
+                              onChange={(e) =>
+                                handleGlobalEditChange(
+                                  item.id,
+                                  "asp",
+                                  e.target.value
+                                )
+                              }
+                              min="0"
+                              step="0.01"
+                              className="w-full p-1 border border-gray-300 rounded-md"
+                            />
+                          ) : (
+                            item.asp
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          {(
+                            (editedRows[item.id]?.quantity || item.quantity) *
+                            (editedRows[item.id]?.asp || item.asp)
+                          ).toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          <button
+                            onClick={() => handleSoftDelete(item.id)}
+                            className="text-red-600 hover:text-red-900"
                           >
-                            {["Units", "Cases", "Pallets", "Kg", "Liters"].map((unit) => (
-                              <option key={unit} value={unit}>{unit}</option>
-                            ))}
-                          </select>
-                        ) : (
-                          item.uom
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        {isGlobalEditing ? (
-                          <input
-                            type="number"
-                            value={editedRows[item.id]?.quantity || item.quantity}
-                            onChange={(e) => handleGlobalEditChange(item.id, "quantity", e.target.value)}
-                            min="0"
-                            step="1"
-                            className="w-full p-1 border border-gray-300 rounded-md"
-                          />
-                        ) : (
-                          item.quantity
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        {isGlobalEditing ? (
-                          <input
-                            type="number"
-                            value={editedRows[item.id]?.asp || item.asp}
-                            onChange={(e) => handleGlobalEditChange(item.id, "asp", e.target.value)}
-                            min="0"
-                            step="0.01"
-                            className="w-full p-1 border border-gray-300 rounded-md"
-                          />
-                        ) : (
-                          item.asp
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {((editedRows[item.id]?.quantity || item.quantity) *
-                          (editedRows[item.id]?.asp || item.asp)).toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        <button
-                          onClick={() => handleSoftDelete(item.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Delete
-                        </button>
-                      </td>
-
-                    </tr>
-                  ))
-                )}
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
               </tbody>
             </table>
           </div>
@@ -366,10 +404,11 @@ const KPITableView = () => {
                   <button
                     key={i + 1}
                     onClick={() => handlePageChange(i + 1)}
-                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${pagination.currentPage === i + 1
-                      ? "z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                      : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
-                      }`}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                      pagination.currentPage === i + 1
+                        ? "z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                        : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+                    }`}
                   >
                     {i + 1}
                   </button>
@@ -436,25 +475,25 @@ const KPITableView = () => {
                         {formatDate(item?.month)}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
-                        {item?.customer?.name || ''}
+                        {item?.customer?.name || ""}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
-                        {item?.product?.name || ''}
+                        {item?.product?.name || ""}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
-                        {item?.supplier?.name || ''}
+                        {item?.supplier?.name || ""}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
-                        {item?.uom || ''}
+                        {item?.uom || ""}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
-                        {item?.quantity || ''}
+                        {item?.quantity || ""}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
-                        {item?.asp || ''}
+                        {item?.asp || ""}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
-                        {(item.quantity || 1 * item.asp || 1)}
+                        {item.quantity || 1 * item.asp || 1}
                       </td>
                       <td className="px-6 py-4 text-sm font-medium">
                         <button
