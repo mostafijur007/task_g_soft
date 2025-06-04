@@ -84,6 +84,14 @@ export const assignSupplierToProducts = createAsyncThunk(
   }
 );
 
+export const fetchTrashedKpis = createAsyncThunk(
+  "app/fetchTrashedKpis",
+  async (page = 1) => {
+    const response = await axios.get(`${API_URL}/kpi/trashed?page=${page}`);
+    return response.data;
+  }
+);
+
 // Slice
 const appSlice = createSlice({
   name: "app",
@@ -106,6 +114,8 @@ const appSlice = createSlice({
     loading: false,
     error: null,
     activeTab: "setup",
+    trashedKpis: [],
+    trashedPagination: {},
   },
   reducers: {
     setActiveTab: (state, action) => {
@@ -175,9 +185,10 @@ const appSlice = createSlice({
         state.error = action.error.message;
       })
       .addCase(bulkUpdateKpi.fulfilled, (state, action) => {
-        // Option 1: Replace all kpiData with response
         state.kpiData = action.payload.data;
-        // Option 2: Or merge updated entries into kpiData if API returns only updated records
+      }).addCase(fetchTrashedKpis.fulfilled, (state, action) => {
+        state.trashedKpis = action.payload.data;
+        state.trashedPagination = action.payload.meta;
       });
   },
 });

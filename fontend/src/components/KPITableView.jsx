@@ -6,11 +6,12 @@ import {
   softDeleteRecord,
   restoreRecord,
   bulkUpdateKpi,
+  fetchTrashedKpis,
 } from "../redux/store";
 
 const KPITableView = () => {
   const dispatch = useDispatch();
-  const { kpiData, deletedRecords, loading, pagination } = useSelector(
+  const { kpiData, deletedRecords, loading, pagination, trashedKpis, trashedPagination } = useSelector(
     (state) => state.app
   );
 
@@ -31,6 +32,12 @@ const KPITableView = () => {
       })
     );
   }, [dispatch, pagination.currentPage, pagination.perPage]);
+
+  useEffect(() => {
+    if (showDeleted) {
+      dispatch(fetchTrashedKpis());
+    }
+  }, [showDeleted, dispatch]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
@@ -82,6 +89,9 @@ const KPITableView = () => {
       console.error("Failed to update records:", error);
     }
   };
+
+  console.log(trashedKpis);
+
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
@@ -256,7 +266,7 @@ const KPITableView = () => {
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Deleted Records
               </h3>
-              {deletedRecords.length > 0 ? (
+              {trashedKpis.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -282,35 +292,35 @@ const KPITableView = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {deletedRecords.map((item) => (
-                        <tr key={item.id} className="bg-red-50">
+                      {trashedKpis.map((item) => (
+                        <tr key={item?.code} className="bg-red-50">
                           <td className="px-6 py-4 text-sm text-gray-500">
-                            {formatDate(item.month)}
+                            {formatDate(item?.month)}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500">
-                            {item.customer}
+                            {item?.customer?.name || ''}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500">
-                            {item.product}
+                            {item?.product?.name || ''}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500">
-                            {item.supplier}
+                            {item?.supplier?.name || ''}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500">
-                            {item.uom}
+                            {item?.uom || ''}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500">
-                            {item.quantity}
+                            {item?.quantity || ''}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500">
-                            {item.asp.toFixed(2)}
+                            {item?.asp || ''}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500">
-                            {(item.quantity * item.asp).toFixed(2)}
+                            {(item.quantity || 1 * item.asp || 1)}
                           </td>
                           <td className="px-6 py-4 text-sm font-medium">
                             <button
-                              onClick={() => handleRestore(item.id)}
+                              onClick={() => handleRestore(item?.id)}
                               className="text-green-600 hover:text-green-900"
                             >
                               Restore
@@ -396,8 +406,8 @@ const KPITableView = () => {
                     key={i + 1}
                     onClick={() => handlePageChange(i + 1)}
                     className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${pagination.currentPage === i + 1
-                        ? "z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                        : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+                      ? "z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                      : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
                       }`}
                   >
                     {i + 1}
