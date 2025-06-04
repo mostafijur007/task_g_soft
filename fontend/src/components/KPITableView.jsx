@@ -6,6 +6,7 @@ import {
   updateKpiRecord,
   softDeleteRecord,
   restoreRecord,
+  bulkUpdateKpi,
 } from "../redux/store";
 
 const KPITableView = () => {
@@ -104,7 +105,7 @@ const KPITableView = () => {
   const handleSaveAll = async () => {
     try {
       const entries = Object.values(editedRows);
-      await axios.post(`${API_URL}/kpi/bulk-update`, { entries });
+      await dispatch(bulkUpdateKpi(entries)).unwrap();
       await dispatch(fetchKpiData());
       setIsGlobalEditing(false);
       setEditedRows({});

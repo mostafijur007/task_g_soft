@@ -58,6 +58,13 @@ export const restoreRecord = createAsyncThunk(
     return id;
   }
 );
+export const bulkUpdateKpi = createAsyncThunk(
+  "app/bulkUpdateKpi",
+  async (entries) => {
+    const response = await axios.put(`${API_URL}/kpi/bulk-update`, { entries });
+    return response.data;
+  }
+);
 
 export const fetchSuppliers = createAsyncThunk(
   "app/fetchSuppliers",
@@ -166,6 +173,11 @@ const appSlice = createSlice({
       })
       .addCase(assignSupplierToProducts.rejected, (state, action) => {
         state.error = action.error.message;
+      })
+      .addCase(bulkUpdateKpi.fulfilled, (state, action) => {
+        // Option 1: Replace all kpiData with response
+        state.kpiData = action.payload.data;
+        // Option 2: Or merge updated entries into kpiData if API returns only updated records
       });
   },
 });
