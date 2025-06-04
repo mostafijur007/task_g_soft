@@ -197,21 +197,49 @@ class CustomerController extends Controller
     /**
      * @OA\Get(
      *     path="/api/customers/{id}",
+     *     summary="Get a single customer by ID",
      *     tags={"Customers"},
-     *     summary="Get customer details",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="Customer ID",
-     *         @OA\Schema(type="integer")
+     *         description="ID of the customer",
+     *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Success",
-     *         @OA\JsonContent(ref="#/components/schemas/CustomerResource")
+     *         description="Customer retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Customer retrieved successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="code", type="string", example="CUS-0001"),
+     *                 @OA\Property(property="name", type="string", example="Prof. Evie Keebler V"),
+     *                 @OA\Property(property="email", type="string", example="marguerite.hegmann@example.com"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-04 17:24:31")
+     *             )
+     *         )
      *     ),
-     *     @OA\Response(response=404, description="Not Found")
+     *     @OA\Response(
+     *         response=404,
+     *         description="Customer not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Customer not found"),
+     *             @OA\Property(property="data", type="string", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     )
      * )
      */
     public function show(string $id)
