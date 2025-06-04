@@ -46,23 +46,36 @@ const KPITableView = () => {
   };
 
   useEffect(() => {
+    // const grouped = kpiData.reduce((acc, item) => {
+    //   const key = `${item.month}-${item.customer}`;
+    //   if (!acc[key]) acc[key] = [];
+    //   acc[key].push(item);
+    //   return acc;
+    // }, {});
+
+    // console.log("groupedData", grouped);
     const grouped = kpiData.reduce((acc, item) => {
-      const key = `${item.month}-${item.customer}-${item.product}`;
+      const customerKey = typeof item.customer === "object" ? item.customer.id : item.customer;
+      const productKey = typeof item.product === "object" ? item.product.id : item.product;
+      const key = `${item.month}-${customerKey}-${productKey}`;
+
       if (!acc[key]) acc[key] = [];
       acc[key].push(item);
       return acc;
     }, {});
+
+
     setGroupedData(grouped);
   }, [kpiData]);
 
-const handleSoftDelete = async (id) => {
-  await dispatch(softDeleteRecord(id));
-  await dispatch(fetchKpiData());
-  await dispatch(fetchTrashedKpis());
-  setSuccessMessage("Record deleted successfully!");
-  setTimeout(() => setSuccessMessage(""), 3000);
-  window.scrollTo(0, 0);
-};
+  const handleSoftDelete = async (id) => {
+    await dispatch(softDeleteRecord(id));
+    await dispatch(fetchKpiData());
+    await dispatch(fetchTrashedKpis());
+    setSuccessMessage("Record deleted successfully!");
+    setTimeout(() => setSuccessMessage(""), 3000);
+    window.scrollTo(0, 0);
+  };
   const handleRestore = async (id) => {
     await dispatch(restoreRecord(id));
     await dispatch(fetchKpiData());
@@ -105,9 +118,6 @@ const handleSoftDelete = async (id) => {
       console.error("Failed to update records:", error);
     }
   };
-
-  console.log(trashedKpis);
-
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6">

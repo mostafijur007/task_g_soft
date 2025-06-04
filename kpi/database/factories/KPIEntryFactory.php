@@ -30,7 +30,7 @@ class KPIEntryFactory extends Factory
             'customer_id' => Customer::factory(),
             'product_id' => Product::factory(),
             'supplier_id' => Supplier::factory(),
-            'month' => $this->faker->date('Y-m'),
+            'month' => $this->faker->date('Y-m-d'),
             'uom' => $this->faker->randomElement(['pcs', 'kg', 'litre', 'box']),
             'quantity' => $quantity,
             'asp' => $asp,

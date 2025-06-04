@@ -136,6 +136,11 @@ const KPISetupForm = () => {
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
+      {successMessage && (
+            <div className="my-4 p-3 bg-green-100 text-green-700 rounded-md">
+              {successMessage}
+            </div>
+          )}
       <h2 className="text-2xl font-bold text-gray-800 mb-6">KPI Setup</h2>
 
       {loading ? (
@@ -350,11 +355,6 @@ const KPISetupForm = () => {
               Create KPI Setup
             </button>
           </div>
-          {successMessage && (
-            <div className="mt-4 p-3 bg-green-100 text-green-700 rounded-md">
-              {successMessage}
-            </div>
-          )}
           {formErrors.submit && (
             <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
               {formErrors.submit}
