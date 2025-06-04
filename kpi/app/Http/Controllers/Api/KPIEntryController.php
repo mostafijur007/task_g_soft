@@ -214,7 +214,7 @@ class KPIEntryController extends Controller
      *     path="/api/kpi/bulk",
      *     summary="Create multiple KPI entries",
      *     description="Bulk store multiple KPI entries at once.",
-     *     tags={"KPI Entries"},
+     *     tags={"KPIs"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(

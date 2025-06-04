@@ -791,7 +791,7 @@
         "/api/kpi/bulk": {
             "post": {
                 "tags": [
-                    "KPI Entries"
+                    "KPIs"
                 ],
                 "summary": "Create multiple KPI entries",
                 "description": "Bulk store multiple KPI entries at once.",
@@ -2086,10 +2086,6 @@
         {
             "name": "Suppliers",
             "description": "API Endpoints for Supplier management"
-        },
-        {
-            "name": "KPI Entries",
-            "description": "KPI Entries"
         }
     ]
 }
