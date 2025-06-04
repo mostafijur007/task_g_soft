@@ -122,7 +122,7 @@ const KPITableView = () => {
                     "Quantity",
                     "ASP",
                     "Total Value",
-                    "Actions",
+                    // "Actions",
                   ].map((h) => (
                     <th
                       key={h}
@@ -244,15 +244,9 @@ const KPITableView = () => {
                           <td className="px-6 py-4 text-sm text-gray-500">
                             {item.quantity * item.asp}
                           </td>
-                          <td className="px-6 py-4 text-sm font-medium">
+                          {/* <td className="px-6 py-4 text-sm font-medium">
                             {!item.deleted_at && (
                               <div className="flex space-x-3">
-                                <button
-                                  onClick={() => handleEdit(item)}
-                                  className="text-blue-600 hover:text-blue-900"
-                                >
-                                  Edit
-                                </button>
                                 <button
                                   onClick={() => handleSoftDelete(item.id)}
                                   className="text-red-600 hover:text-red-900"
@@ -261,7 +255,7 @@ const KPITableView = () => {
                                 </button>
                               </div>
                             )}
-                          </td>
+                          </td> */}
                         </>
                       )}
                     </tr>
