@@ -47,7 +47,7 @@ export const updateKpiRecord = createAsyncThunk(
 export const softDeleteRecord = createAsyncThunk(
   "app/softDeleteRecord",
   async (id) => {
-    await axios.delete(`${API_URL}/kpi/${id}`);
+    await axios.delete(`${API_URL}/kpis/${id}`);
     return id;
   }
 );

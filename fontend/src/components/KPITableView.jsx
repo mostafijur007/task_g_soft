@@ -55,7 +55,14 @@ const KPITableView = () => {
     setGroupedData(grouped);
   }, [kpiData]);
 
-  const handleSoftDelete = (id) => dispatch(softDeleteRecord(id));
+const handleSoftDelete = async (id) => {
+  await dispatch(softDeleteRecord(id));
+  await dispatch(fetchKpiData());
+  await dispatch(fetchTrashedKpis());
+  setSuccessMessage("Record deleted successfully!");
+  setTimeout(() => setSuccessMessage(""), 3000);
+  window.scrollTo(0, 0);
+};
   const handleRestore = async (id) => {
     await dispatch(restoreRecord(id));
     await dispatch(fetchKpiData());
@@ -260,7 +267,12 @@ const KPITableView = () => {
                           (editedRows[item.id]?.asp || item.asp)).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
-
+                        <button
+                          onClick={() => handleSoftDelete(item.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Delete
+                        </button>
                       </td>
 
                     </tr>
