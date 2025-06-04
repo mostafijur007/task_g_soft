@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchKpiData,
-  updateKpiRecord,
   softDeleteRecord,
   restoreRecord,
   bulkUpdateKpi,
@@ -16,8 +15,6 @@ const KPITableView = () => {
   );
 
   const [showDeleted, setShowDeleted] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({});
   const [groupedData, setGroupedData] = useState({});
   const [isGlobalEditing, setIsGlobalEditing] = useState(false);
   const [editedRows, setEditedRows] = useState({});
@@ -51,34 +48,6 @@ const KPITableView = () => {
     setGroupedData(grouped);
   }, [kpiData]);
 
-  const handleEdit = (item) => {
-    setEditingId(item.id);
-    setEditForm({ uom: item.uom, quantity: item.quantity, asp: item.asp });
-  };
-
-  const handleEditChange = (e) => {
-    const { name, value } = e.target;
-    setEditForm({
-      ...editForm,
-      [name]:
-        name === "quantity" || name === "asp"
-          ? value === ""
-            ? ""
-            : parseFloat(value)
-          : value,
-    });
-  };
-
-  const handleSave = async (id) => {
-    try {
-      await dispatch(updateKpiRecord({ id, data: editForm })).unwrap();
-      setEditingId(null);
-    } catch (error) {
-      console.error("Failed to update record:", error);
-    }
-  };
-
-  const handleCancelEdit = () => setEditingId(null);
   const handleSoftDelete = (id) => dispatch(softDeleteRecord(id));
   const handleRestore = (id) => dispatch(restoreRecord(id));
 
