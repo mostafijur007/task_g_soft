@@ -31,7 +31,7 @@ export const fetchKpiData = createAsyncThunk(
 export const createBulkKpi = createAsyncThunk(
   "app/createBulkKpi",
   async (kpiRecords) => {
-    const response = await axios.post(`${API_URL}/kpi/bulk`, {
+    const response = await axios.post(`${API_URL}/kpis/bulk`, {
       entries: kpiRecords,
     });
     return response.data;
