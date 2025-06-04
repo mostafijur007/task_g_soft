@@ -120,10 +120,10 @@ const appSlice = createSlice({
       .addCase(fetchKpiData.fulfilled, (state, action) => {
         state.kpiData = action.payload.data;
         state.pagination = {
-          currentPage: action.payload.current_page,
-          perPage: action.payload.per_page,
-          totalPages: action.payload.last_page,
-          totalItems: action.payload.total
+          currentPage: action.payload.meta.current_page,
+          perPage: action.payload.meta.per_page,
+          totalPages: action.payload.meta.last_page,
+          totalItems: action.payload.meta.total
         };
       })
       .addCase(createBulkKpi.fulfilled, (state, action) => {
