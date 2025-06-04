@@ -777,7 +777,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Deleted successfully"
+                                            "example": "Kpi entry Deleted successfully"
                                         }
                                     },
                                     "type": "object"
@@ -1106,6 +1106,88 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/kpi/bulk-update": {
+            "put": {
+                "tags": [
+                    "KPIs"
+                ],
+                "summary": "Bulk update KPI entries",
+                "description": "Updates multiple KPI entries by ID with provided fields",
+                "operationId": "bulkUpdateKPIEntries",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "entries"
+                                ],
+                                "properties": {
+                                    "entries": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "example": 50
+                                                },
+                                                "asp": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "minimum": 0,
+                                                    "example": 22.5
+                                                },
+                                                "uom": {
+                                                    "type": "string",
+                                                    "maxLength": 50,
+                                                    "example": "pcs"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "minItems": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Bulk KPI entries updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Bulk update completed"
+                                        },
+                                        "updated_count": {
+                                            "type": "integer",
+                                            "example": 3
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
                     }
                 }
             }

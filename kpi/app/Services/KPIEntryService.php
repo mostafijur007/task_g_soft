@@ -71,4 +71,24 @@ class KPIEntryService
     {
         return $this->repo->getAllTrashed();
     }
+
+    public function bulkUpdate(array $entries)
+    {
+        $updated = [];
+        foreach ($entries as $entry) {
+            $kpi = $this->repo->find($entry['id']);
+            if (!$kpi) continue;
+            $kpi->quantity = $entry['quantity'] ?? $kpi->quantity;
+            $kpi->asp = $entry['asp'] ?? $kpi->asp;
+            $kpi->uom = $entry['uom'] ?? $kpi->uom;
+
+            if (isset($entry['quantity']) || isset($entry['asp'])) {
+                $kpi->total_value = $kpi->quantity * $kpi->asp;
+            }
+
+            $kpi->save();
+            $updated[] = $kpi;
+        }
+        return $updated;
+    }
 }

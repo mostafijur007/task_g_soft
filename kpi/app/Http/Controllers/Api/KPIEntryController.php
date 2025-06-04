@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BulkUpdateKpiRequest;
 use App\Http\Requests\KPIEntryRequest;
 use App\Http\Requests\StoreKPIEntryRequest;
 use App\Http\Resources\KpiEntryResource;
@@ -140,6 +141,7 @@ class KPIEntryController extends Controller
     public function show($id)
     {
         return response()->json($this->service->find($id));
+        
     }
 
     /**
@@ -198,7 +200,7 @@ class KPIEntryController extends Controller
      *         response=200,
      *         description="Deleted successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Deleted successfully")
+     *             @OA\Property(property="message", type="string", example="Kpi entry Deleted successfully")
      *         )
      *     )
      * )
@@ -206,7 +208,11 @@ class KPIEntryController extends Controller
     public function destroy($id)
     {
         $this->service->delete($id);
-        return response()->json(['message' => 'Deleted successfully']);
+        return $this->success(
+            '',
+            'Kpi entry Deleted successfully',
+            200
+        );
     }
 
     /**
@@ -360,6 +366,58 @@ class KPIEntryController extends Controller
             KpiEntryResource::collection($data)->response()->getData(true),
             'Kpi trashed entry retrieved successfully',
             201
+        );
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/kpi/bulk-update",
+     *     tags={"KPIs"},
+     *     summary="Bulk update KPI entries",
+     *     description="Updates multiple KPI entries by ID with provided fields",
+     *     operationId="bulkUpdateKPIEntries",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"entries"},
+     *             @OA\Property(
+     *                 property="entries",
+     *                 type="array",
+     *                 minItems=1,
+     *                 @OA\Items(
+     *                     type="object",
+     *                     required={"id"},
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="quantity", type="integer", minimum=0, example=50),
+     *                     @OA\Property(property="asp", type="number", format="float", minimum=0, example=22.5),
+     *                     @OA\Property(property="uom", type="string", maxLength=50, example="pcs")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Bulk KPI entries updated successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Bulk update completed"),
+     *             @OA\Property(property="updated_count", type="integer", example=3)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function bulkUpdate(BulkUpdateKpiRequest $request)
+    {
+        $entries = $this->service->bulkUpdate($request->validated()['entries']);
+
+        return $this->success(
+            KpiEntryResource::collection($entries)->response()->getData(true),
+            'KPI entries updated successfully.',
+            200
         );
     }
 }

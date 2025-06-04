@@ -26,6 +26,7 @@ Route::post('suppliers/restore/{id}', [SupplierController::class, 'restore']); /
 // KPI Entries
 Route::apiResource('kpis', KPIEntryController::class);
 Route::post('kpi/bulk', [KPIEntryController::class, 'bulkStore']);
+Route::put('/kpi/bulk-update', [KpiEntryController::class, 'bulkUpdate']);
 Route::get('kpi/trashed', [KPIEntryController::class, 'trashed']);
 
 
