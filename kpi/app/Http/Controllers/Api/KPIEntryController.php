@@ -59,12 +59,12 @@ class KPIEntryController extends Controller
      */
     public function index(Request $request)
     {
-        $data = $request->has('month')
+        $kpis = $request->has('month')
             ? $this->service->getByMonth($request->month)
             : $this->service->getAll();
 
         return $this->success(
-            KpiEntryResource::collection($data),
+            KpiEntryResource::collection($kpis)->response()->getData(true),
             'Kpi entry retrieved successfully',
             201
         );
