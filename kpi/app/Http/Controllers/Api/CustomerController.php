@@ -258,18 +258,19 @@ class CustomerController extends Controller
     /**
      * @OA\Put(
      *     path="/api/customers/{id}",
-     *     tags={"Customers"},
      *     summary="Update customer details",
+     *     tags={"Customers"},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="Customer ID",
-     *         @OA\Schema(type="integer")
+     *         @OA\Schema(type="integer", example=2)
      *     ),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
+     *             required={"name", "email"},
      *             @OA\Property(property="name", type="string", example="Md Mostafijur Rahman"),
      *             @OA\Property(property="email", type="string", format="email", example="updated.mostafijur@gmail.com"),
      *             @OA\Property(property="phone", type="string", example="01738896884"),
@@ -278,11 +279,51 @@ class CustomerController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Success",
-     *         @OA\JsonContent(ref="#/components/schemas/CustomerResource")
+     *         description="Customer updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Customer updated successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=2),
+     *                 @OA\Property(property="code", type="string", example="CUS-0002"),
+     *                 @OA\Property(property="name", type="string", example="Md Mostafijur Rahman"),
+     *                 @OA\Property(property="email", type="string", example="updated.mostafijur@gmail.com"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-04 17:24:31")
+     *             )
+     *         )
      *     ),
-     *     @OA\Response(response=404, description="Not Found"),
-     *     @OA\Response(response=422, description="Validation Error")
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="name", type="array", @OA\Items(type="string", example="The name field is required.")),
+     *                 @OA\Property(property="email", type="array", @OA\Items(type="string", example="The email must be a valid email address."))
+     *             ),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Customer not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Customer not found"),
+     *             @OA\Property(property="data", type="string", example=null)
+     *         )
+     *     ),
+     *    @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     )
      * )
      */
     public function update(StoreCustomerRequest $request, string $id)
