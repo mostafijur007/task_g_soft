@@ -7,9 +7,9 @@ use App\Repositories\Interfaces\KPIEntryRepositoryInterface;
 
 class KPIEntryRepository implements KPIEntryRepositoryInterface
 {
-    public function all()
+    public function all($perPage = 15)
     {
-        return KPIEntry::with('customer', 'product', 'supplier')->get();
+        return KPIEntry::with('customer', 'product', 'supplier')->paginate($perPage);
     }
 
     public function find($id)
@@ -34,8 +34,8 @@ class KPIEntryRepository implements KPIEntryRepositoryInterface
         return KPIEntry::findOrFail($id)->delete();
     }
 
-    public function byMonth($month)
+    public function byMonth($perPage=10)
     {
-        return KPIEntry::with('customer', 'product', 'supplier')->where('month', $month)->get();
+        return KPIEntry::with('customer', 'product', 'supplier')->where('month', $month)->paginate($perPage);
     }
 }

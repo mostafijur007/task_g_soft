@@ -21,10 +21,13 @@ export const fetchCustomerProducts = createAsyncThunk(
     return response.data;
   }
 );
-export const fetchKpiData = createAsyncThunk("app/fetchKpiData", async () => {
-  const response = await axios.get(`${API_URL}/kpis`);
-  return response.data.data;
-});
+export const fetchKpiData = createAsyncThunk(
+  "app/fetchKpiData",
+  async ({ page = 1, perPage = 10 } = {}) => {
+    const response = await axios.get(`${API_URL}/kpis?page=${page}&per_page=${perPage}`);
+    return response.data;
+  }
+);
 export const createBulkKpi = createAsyncThunk(
   "app/createBulkKpi",
   async (kpiRecords) => {
@@ -86,6 +89,12 @@ const appSlice = createSlice({
     },
     customerProducts: [],
     kpiData: [],
+    pagination: {
+      currentPage: 1,
+      perPage: 10,
+      totalPages: 1,
+      totalItems: 0
+    },
     deletedRecords: [],
     loading: false,
     error: null,
@@ -109,7 +118,13 @@ const appSlice = createSlice({
         state.customerProducts = action.payload;
       })
       .addCase(fetchKpiData.fulfilled, (state, action) => {
-        state.kpiData = action.payload;
+        state.kpiData = action.payload.data;
+        state.pagination = {
+          currentPage: action.payload.current_page,
+          perPage: action.payload.per_page,
+          totalPages: action.payload.last_page,
+          totalItems: action.payload.total
+        };
       })
       .addCase(createBulkKpi.fulfilled, (state, action) => {
         state.kpiData = [...state.kpiData, ...action.payload.data];
