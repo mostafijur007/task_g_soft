@@ -989,13 +989,13 @@
                 }
             }
         },
-        "/api/kpis/trashed": {
+        "/api/kpi/trashed": {
             "get": {
                 "tags": [
                     "KPIs"
                 ],
                 "summary": "Get all trashed KPI entries",
-                "operationId": "4160704380acefd7a3d7ae0e45ae3a94",
+                "operationId": "fc00bf44e533c04fff9fc8ffe9ff49d3",
                 "responses": {
                     "200": {
                         "description": "Get all trashed KPI entries",

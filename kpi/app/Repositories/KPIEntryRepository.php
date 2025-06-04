@@ -39,8 +39,8 @@ class KPIEntryRepository implements KPIEntryRepositoryInterface
         return KPIEntry::with('customer', 'product', 'supplier')->where('month', $month)->paginate($perPage);
     }
 
-    public function getAllTrashed()
+    public function getAllTrashed($perPage = 15)
     {
-        return KPIEntry::with('customer', 'product', 'supplier')->onlyTrashed()->get();
+        return KPIEntry::with('customer', 'product', 'supplier')->onlyTrashed()->paginate($perPage);
     }
 }

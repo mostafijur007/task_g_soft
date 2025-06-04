@@ -24,12 +24,10 @@ Route::apiResource('suppliers', SupplierController::class);
 Route::post('suppliers/restore/{id}', [SupplierController::class, 'restore']); // Optional
 
 // KPI Entries
+Route::apiResource('kpis', KPIEntryController::class);
+Route::post('kpi/bulk', [KPIEntryController::class, 'bulkStore']);
+Route::get('kpi/trashed', [KPIEntryController::class, 'trashed']);
 
-Route::group(['prefix' => 'kpis'], function () {
-    Route::apiResource('/', KPIEntryController::class);
-    Route::post('bulk', [KPIEntryController::class, 'bulkStore']);
-    Route::get('trashed', [KPIEntryController::class, 'trashed']);
-});
 
 // Assignments (custom pivot logic, if applicable)
 Route::post('customer-products/{customerId}', [CustomerController::class, 'assignProducts']);

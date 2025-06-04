@@ -301,7 +301,7 @@ class KPIEntryController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/kpis/trashed",
+     *     path="/api/kpi/trashed",
      *     summary="Get all trashed KPI entries",
      *     tags={"KPIs"},
      *     @OA\Response(
@@ -357,7 +357,7 @@ class KPIEntryController extends Controller
         $data = $this->service->getTrashed();
 
         return $this->success(
-            KpiEntryResource::collection($data),
+            KpiEntryResource::collection($data)->response()->getData(true),
             'Kpi trashed entry retrieved successfully',
             201
         );
