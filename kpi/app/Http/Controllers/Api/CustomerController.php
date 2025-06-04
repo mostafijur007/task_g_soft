@@ -66,10 +66,10 @@ class CustomerController extends Controller
      *             @OA\Property(
      *                 property="links",
      *                 type="object",
-     *                 @OA\Property(property="first", type="string", example="http://127.0.0.1:8000/api/customers?page=1"),
-     *                 @OA\Property(property="last", type="string", example="http://127.0.0.1:8000/api/customers?page=4"),
+     *                 @OA\Property(property="first", type="string", example="http://domain_name.com/api/customers?page=1"),
+     *                 @OA\Property(property="last", type="string", example="http://domainname.com/api/customers?page=4"),
      *                 @OA\Property(property="prev", type="string", nullable=true, example=null),
-     *                 @OA\Property(property="next", type="string", example="http://127.0.0.1:8000/api/customers?page=2")
+     *                 @OA\Property(property="next", type="string", example="http://domain_name.com/api/customers?page=2")
      *             ),
      *             @OA\Property(
      *                 property="meta",
@@ -77,7 +77,7 @@ class CustomerController extends Controller
      *                 @OA\Property(property="current_page", type="integer", example=1),
      *                 @OA\Property(property="from", type="integer", example=1),
      *                 @OA\Property(property="last_page", type="integer", example=4),
-     *                 @OA\Property(property="path", type="string", example="http://127.0.0.1:8000/api/customers"),
+     *                 @OA\Property(property="path", type="string", example="http://domainname.com/api/customers"),
      *                 @OA\Property(property="per_page", type="integer", example=15),
      *                 @OA\Property(property="to", type="integer", example=15),
      *                 @OA\Property(property="total", type="integer", example=55),
@@ -146,9 +146,42 @@ class CustomerController extends Controller
      *     @OA\Response(
      *         response=201,
      *         description="Created",
-     *         @OA\JsonContent(ref="#/components/schemas/CustomerResource")
+     *         @OA\JsonContent(
+     *              @OA\Property(property="status", type="boolean", example=true),
+     *              @OA\Property(property="message", type="string", example="Customer created successfully"),
+     *              @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="code", type="string", example="CUS-0001"),
+     *                 @OA\Property(property="name", type="string", example="Prof. Evie Keebler V"),
+     *                 @OA\Property(property="email", type="string", example="marguerite.hegmann@example.com"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-04 17:24:31")
+     *             )
+     *         )
      *     ),
-     *     @OA\Response(response=422, description="Validation Error")
+     *     @OA\Response(
+     *          response=422, 
+     *          description="Validation Error",
+     *          @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="name", type="array", @OA\Items(type="string", example="The name field is required."))
+     *             ),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     ),
+     *    @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     )
      * )
      */
     public function store(StoreCustomerRequest $request)

@@ -35,11 +35,11 @@
                                             "properties": {
                                                 "first": {
                                                     "type": "string",
-                                                    "example": "http://127.0.0.1:8000/api/customers?page=1"
+                                                    "example": "http://domain_name.com/api/customers?page=1"
                                                 },
                                                 "last": {
                                                     "type": "string",
-                                                    "example": "http://127.0.0.1:8000/api/customers?page=4"
+                                                    "example": "http://domainname.com/api/customers?page=4"
                                                 },
                                                 "prev": {
                                                     "type": "string",
@@ -48,7 +48,7 @@
                                                 },
                                                 "next": {
                                                     "type": "string",
-                                                    "example": "http://127.0.0.1:8000/api/customers?page=2"
+                                                    "example": "http://domain_name.com/api/customers?page=2"
                                                 }
                                             },
                                             "type": "object"
@@ -69,7 +69,7 @@
                                                 },
                                                 "path": {
                                                     "type": "string",
-                                                    "example": "http://127.0.0.1:8000/api/customers"
+                                                    "example": "http://domainname.com/api/customers"
                                                 },
                                                 "per_page": {
                                                     "type": "integer",
@@ -213,13 +213,110 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/CustomerResource"
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Customer created successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "code": {
+                                                    "type": "string",
+                                                    "example": "CUS-0001"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Prof. Evie Keebler V"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "marguerite.hegmann@example.com"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-06-04 17:24:31"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     },
                     "422": {
-                        "description": "Validation Error"
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The name field is required."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": ""
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        },
+                                        "errors": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": ""
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
