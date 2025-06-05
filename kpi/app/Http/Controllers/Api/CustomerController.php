@@ -351,8 +351,35 @@ class CustomerController extends Controller
      *         description="Customer ID",
      *         @OA\Schema(type="integer")
      *     ),
-     *     @OA\Response(response=200, description="Success"),
-     *     @OA\Response(response=404, description="Not Found")
+     *     @OA\Response(
+     *      response=200, 
+     *      description="Success",
+     *      @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Customer deleted successfully"),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     * 
+     *      ),
+     *     @OA\Response(
+     *      response=404, 
+     *      description="Not Found",
+     *       @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Customer not found"),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *      ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     )
      * )
      */
     public function destroy(string $id)
