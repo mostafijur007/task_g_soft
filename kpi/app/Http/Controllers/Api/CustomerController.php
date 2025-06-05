@@ -10,6 +10,7 @@ use App\Traits\ApiResponseTrait;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Info(
@@ -387,7 +388,7 @@ class CustomerController extends Controller
         try {
             $this->service->delete($id);
             return $this->success(
-                null,
+                "",
                 'Customer deleted successfully'
             );
         } catch (\Exception $e) {
@@ -407,16 +408,42 @@ class CustomerController extends Controller
      *         description="Customer ID",
      *         @OA\Schema(type="integer")
      *     ),
-     *     @OA\Response(response=200, description="Success"),
-     *     @OA\Response(response=404, description="Not Found")
+     *     @OA\Response(
+     *      response=200, 
+     *      description="Success",
+     *       @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Customer restored successfully"),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *      ),
+     *     @OA\Response(
+     *      response=404, 
+     *      description="Not Found",
+     *       @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Customer not found"),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *      ),
+     *      @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     )
      * )
      */
     public function restore($id)
     {
         try {
-            $customer = $this->service->restore($id);
+            $this->service->restore($id);
             return $this->success(
-                new CustomerResource($customer),
+                '',
                 'Customer restored successfully'
             );
         } catch (Exception $e) {
