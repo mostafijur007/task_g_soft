@@ -11,6 +11,7 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * @OA\Info(
@@ -484,36 +485,64 @@ class CustomerController extends Controller
      *         description="Products assigned",
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Assigned products retrieved successfully"),
+     *             @OA\Property(property="message", type="string", example="Products assigned successfully."),
      *             @OA\Property(
      *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(
-     *                     type="object",
-     *                     @OA\Property(property="id", type="integer", example=1),
-     *                     @OA\Property(property="code", type="string", example="CUS-0001"),
-     *                     @OA\Property(property="name", type="string", example="Prof. Evie Keebler V"),
-     *                     @OA\Property(property="email", type="string", example="marguerite.hegmann@example.com"),
-     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-04 17:24:31")
-     *                 )
+     *                 type="string",
+     *                 example="null"
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Validation failed"
+     *         description="Validation failed",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="product_ids", type="array", @OA\Items(type="string", example="The product ids field is required."))
+     *             ),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     ),
+     *      @OA\Response(
+     *      response=404, 
+     *      description="Not Found",
+     *       @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Customer not found"),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *      ),
+     *      @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An unexpected error occurred."),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
      *     )
      * )
      */
     public function assignProducts(Request $request, $id)
     {
         try {
-            $validated = $request->validate([
+            $validated = Validator::make($request->all(), [
                 'product_ids' => 'required|array',
                 'product_ids.*' => 'integer|exists:products,id',
             ]);
 
-            $this->service->assignProducts($id, $validated['product_ids']);
+            if ($validated->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validated->errors(),
+                ], 422);
+            }
+
+            $this->service->assignProducts($id, $validated->validated()['product_ids']);
 
             return $this->success(
                 null,
