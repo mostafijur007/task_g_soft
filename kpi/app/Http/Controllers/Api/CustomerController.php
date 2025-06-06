@@ -414,7 +414,11 @@ class CustomerController extends Controller
      *       @OA\JsonContent(
      *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Customer restored successfully"),
-     *             @OA\Property(property="data", type="string", example="")
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="string",
+     *                 example=""
+     *             )
      *         )
      *      ),
      *     @OA\Response(
@@ -479,7 +483,20 @@ class CustomerController extends Controller
      *         response=200,
      *         description="Products assigned",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Products assigned")
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Assigned products retrieved successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="code", type="string", example="CUS-0001"),
+     *                     @OA\Property(property="name", type="string", example="Prof. Evie Keebler V"),
+     *                     @OA\Property(property="email", type="string", example="marguerite.hegmann@example.com"),
+     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-04 17:24:31")
+     *                 )
+     *             )
      *         )
      *     ),
      *     @OA\Response(
