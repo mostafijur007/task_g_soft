@@ -35,6 +35,11 @@ class SupplierService
         return $this->repo->delete($id);
     }
 
+    public function restore($id)
+    {
+        return $this->repo->restore($id);
+    }
+
     public function find($id)
     {
         return $this->repo->find($id);

@@ -33,4 +33,11 @@ class SupplierRepository implements SupplierRepositoryInterface
     {
         return Supplier::findOrFail($id)->delete();
     }
+
+    public function restore($id)
+    {
+        $supplier = Supplier::withTrashed()->findOrFail($id);
+        $supplier->restore();
+        return true;
+    }
 }

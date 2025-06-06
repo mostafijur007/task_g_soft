@@ -7,6 +7,7 @@ use App\Http\Requests\StoreSupplierRequest;
 use App\Http\Resources\SupplierResource;
 use App\Services\SupplierService;
 use App\Traits\ApiResponseTrait;
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
@@ -384,6 +385,67 @@ class SupplierController extends Controller
         } catch (ModelNotFoundException $e) {
             return $this->error('Supplier not found.', 404);
         } catch (\Exception $e) {
+            return $this->error('An unexpected error occurred.', 500);
+        }
+    }
+
+     /**
+     * @OA\Post(
+     *     path="/api/suppliers/restore/{id}",
+     *     tags={"Suppliers"},
+     *     summary="Restore a soft-deleted supplier",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Supplier ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *      response=200, 
+     *      description="Success",
+     *       @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Supplier restored successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="string",
+     *                 example=""
+     *             )
+     *         )
+     *      ),
+     *     @OA\Response(
+     *      response=404, 
+     *      description="Not Found",
+     *       @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Supplier not found"),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *      ),
+     *      @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An unexpected error occurred."),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     )
+     * )
+     */
+    public function restore($id)
+    {
+        try {
+            $this->service->restore($id);
+            return $this->success(
+                '',
+                'Supplier restored successfully'
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->error('Supplier not found.', 404);
+        } catch (Exception $e) {
             return $this->error('An unexpected error occurred.', 500);
         }
     }
