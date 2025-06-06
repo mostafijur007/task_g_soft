@@ -7,6 +7,7 @@ use App\Http\Requests\StoreSupplierRequest;
 use App\Http\Resources\SupplierResource;
 use App\Services\SupplierService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 /**
@@ -19,7 +20,7 @@ class SupplierController extends Controller
 {
 
     use ApiResponseTrait;
-    
+
     /**
      * @var SupplierService
      */
@@ -40,24 +41,51 @@ class SupplierController extends Controller
      *         response=200,
      *         description="List of suppliers",
      *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(
-     *                 @OA\Property(property="id", type="integer"),
-     *                 @OA\Property(property="code", type="string", example="SUP-0001"),
-     *                 @OA\Property(property="name", type="string"),
-     *                 @OA\Property(property="email", type="string", nullable=true),
-     *                 @OA\Property(property="phone", type="string", nullable=true),
-     *                 @OA\Property(property="created_at", type="string", format="datetime"),
-     *                 @OA\Property(property="updated_at", type="string", format="datetime"),
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Suppliers retrieved successfully"),
+     *             @OA\Property(
+     *                 property="links",
+     *                 type="object",
+     *                 @OA\Property(property="first", type="string", example="http://domain_name.com/api/suppliers?page=1"),
+     *                 @OA\Property(property="last", type="string", example="http://domainname.com/api/suppliers?page=4"),
+     *                 @OA\Property(property="prev", type="string", nullable=true, example=null),
+     *                 @OA\Property(property="next", type="string", example="http://domain_name.com/api/suppliers?page=2")
      *             ),
-     *         )
-     *     ),
-     *    @OA\Response(
-     *         response=404,
-     *         description="Supplier not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="No query results for model")
+     *             @OA\Property(
+     *                 property="meta",
+     *                 type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="from", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=4),
+     *                 @OA\Property(property="path", type="string", example="http://domainname.com/api/suppliers"),
+     *                 @OA\Property(property="per_page", type="integer", example=15),
+     *                 @OA\Property(property="to", type="integer", example=15),
+     *                 @OA\Property(property="total", type="integer", example=55),
+     *                 @OA\Property(
+     *                     property="links",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         type="object",
+     *                         @OA\Property(property="url", type="string", nullable=true),
+     *                         @OA\Property(property="label", type="string"),
+     *                         @OA\Property(property="active", type="boolean")
+     *                     )
+     *                 )
+     *             ),
+     *              @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                    @OA\Property(property="id", type="integer"),
+     *                    @OA\Property(property="code", type="string", example="SUP-0001"),
+     *                    @OA\Property(property="name", type="string"),
+     *                    @OA\Property(property="email", type="string", nullable=true),
+     *                    @OA\Property(property="phone", type="string", nullable=true),
+     *                    @OA\Property(property="created_at", type="string", format="datetime"),
+     *                    @OA\Property(property="updated_at", type="string", format="datetime"),
+     *                 )
+     *             ),
      *         )
      *     ),
      *     @OA\Response(
@@ -65,14 +93,21 @@ class SupplierController extends Controller
      *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="An error occurred")
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
      *         )
      *     )
      * )
      */
     public function index()
     {
-        return response()->json($this->service->getAll());
+        $suppliers = $this->service->getAll();
+        return $this->success(
+            SupplierResource::collection($suppliers)->response()->getData(true),
+            'Suppliers retrieved successfully',
+            200
+        );
     }
 
     /**
@@ -93,18 +128,42 @@ class SupplierController extends Controller
      *         response=201,
      *         description="Supplier created successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="id", type="integer"),
-     *             @OA\Property(property="code", type="string"),
-     *             @OA\Property(property="name", type="string"),
-     *             @OA\Property(property="email", type="string", nullable=true),
-     *             @OA\Property(property="phone", type="string", nullable=true),
-     *             @OA\Property(property="created_at", type="string", format="datetime"),
-     *             @OA\Property(property="updated_at", type="string", format="datetime")
+     *              @OA\Property(property="status", type="boolean", example=true),
+     *              @OA\Property(property="message", type="string", example="Supplier created successfully"),
+     *              @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                  @OA\Property(property="id", type="integer"),
+     *                  @OA\Property(property="code", type="string"),
+     *                  @OA\Property(property="name", type="string"),
+     *                  @OA\Property(property="email", type="string", nullable=true),
+     *                  @OA\Property(property="phone", type="string", nullable=true),
+     *                  @OA\Property(property="created_at", type="string", format="datetime"),
+     *                  @OA\Property(property="updated_at", type="string", format="datetime")
+     *             )
      *         )
      *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error"
+     *      @OA\Response(
+     *          response=422, 
+     *          description="Validation Error",
+     *          @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="name", type="array", @OA\Items(type="string", example="The name field is required."))
+     *             ),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     ),
+     *      @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
      *     )
      * )
      */
@@ -134,18 +193,39 @@ class SupplierController extends Controller
      *         response=200,
      *         description="Supplier details",
      *         @OA\JsonContent(
-     *             @OA\Property(property="id", type="integer"),
-     *             @OA\Property(property="code", type="string"),
-     *             @OA\Property(property="name", type="string"),
-     *             @OA\Property(property="email", type="string", nullable=true),
-     *             @OA\Property(property="phone", type="string", nullable=true),
-     *             @OA\Property(property="created_at", type="string", format="datetime"),
-     *             @OA\Property(property="updated_at", type="string", format="datetime")
+     *              @OA\Property(property="status", type="boolean", example=true),
+     *              @OA\Property(property="message", type="string", example="Supplier retrieved successfully"),
+     *              @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                  @OA\Property(property="id", type="integer"),
+     *                  @OA\Property(property="code", type="string"),
+     *                  @OA\Property(property="name", type="string"),
+     *                  @OA\Property(property="email", type="string", nullable=true),
+     *                  @OA\Property(property="phone", type="string", nullable=true),
+     *                  @OA\Property(property="created_at", type="string", format="datetime"),
+     *                  @OA\Property(property="updated_at", type="string", format="datetime")
+     *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Supplier not found"
+     *         description="Supplier not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Supplier not found"),
+     *             @OA\Property(property="data", type="string", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An unexpected error occurred."),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
      *     )
      * )
      */
@@ -157,8 +237,10 @@ class SupplierController extends Controller
                 new SupplierResource($supplier),
                 'Supplier retrieved successfully'
             );
+        } catch (ModelNotFoundException $e) {
+            return $this->error('Supplier not found.', 404);
         } catch (\Exception $e) {
-            return $this->error('Server down', 500);
+            return $this->error('An unexpected error occurred.', 500);
         }
     }
 
@@ -187,22 +269,50 @@ class SupplierController extends Controller
      *         response=200,
      *         description="Supplier updated successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="id", type="integer"),
-     *             @OA\Property(property="code", type="string"),
-     *             @OA\Property(property="name", type="string"),
-     *             @OA\Property(property="email", type="string", nullable=true),
-     *             @OA\Property(property="phone", type="string", nullable=true),
-     *             @OA\Property(property="created_at", type="string", format="datetime"),
-     *             @OA\Property(property="updated_at", type="string", format="datetime")
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Supplier updated successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer"),
+     *                  @OA\Property(property="code", type="string"),
+     *                  @OA\Property(property="name", type="string"),
+     *                  @OA\Property(property="email", type="string", nullable=true),
+     *                  @OA\Property(property="phone", type="string", nullable=true),
+     *                  @OA\Property(property="created_at", type="string", format="datetime"),
+     *                  @OA\Property(property="updated_at", type="string", format="datetime")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="name", type="array", @OA\Items(type="string", example="The name field is required.")),
+     *                 @OA\Property(property="email", type="array", @OA\Items(type="string", example="The email must be a valid email address."))
+     *             ),
+     *             @OA\Property(property="data", type="string", example="")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Supplier not found"
+     *         description="Supplier not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Supplier not found"),
+     *             @OA\Property(property="data", type="string", example=null)
+     *         )
      *     ),
      *     @OA\Response(
-     *         response=422,
-     *         description="Validation error"
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An unexpected error occurred."),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
      *     )
      * )
      */
@@ -214,8 +324,10 @@ class SupplierController extends Controller
                 new SupplierResource($supplier),
                 'Supplier updated successfully'
             );
+        } catch (ModelNotFoundException $e) {
+            return $this->error('Supplier not found.', 404);
         } catch (\Exception $e) {
-            return $this->error('Supplier not found', 500);
+            return $this->error('An unexpected error occurred.', 500);
         }
     }
 
@@ -235,12 +347,29 @@ class SupplierController extends Controller
      *         response=200,
      *         description="Supplier deleted successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Deleted successfully")
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Deleted successfully"),
+     *             @OA\Property(property="data", type="string", example="")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Supplier not found"
+     *         description="Supplier not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Supplier not found"),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An unexpected error occurred."),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
      *     )
      * )
      */
@@ -252,8 +381,10 @@ class SupplierController extends Controller
                 '',
                 'Supplier deleted successfully'
             );
+        } catch (ModelNotFoundException $e) {
+            return $this->error('Supplier not found.', 404);
         } catch (\Exception $e) {
-            return $this->error('Supplier not found', 404);
+            return $this->error('An unexpected error occurred.', 500);
         }
     }
 }

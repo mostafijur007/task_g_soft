@@ -2647,55 +2647,121 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "id": {
-                                                "type": "integer"
-                                            },
-                                            "code": {
-                                                "type": "string",
-                                                "example": "SUP-0001"
-                                            },
-                                            "name": {
-                                                "type": "string"
-                                            },
-                                            "email": {
-                                                "type": "string",
-                                                "nullable": true
-                                            },
-                                            "phone": {
-                                                "type": "string",
-                                                "nullable": true
-                                            },
-                                            "created_at": {
-                                                "type": "string",
-                                                "format": "datetime"
-                                            },
-                                            "updated_at": {
-                                                "type": "string",
-                                                "format": "datetime"
-                                            }
-                                        },
-                                        "type": "object"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Supplier not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
                                     "properties": {
-                                        "success": {
+                                        "status": {
                                             "type": "boolean",
-                                            "example": false
+                                            "example": true
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "No query results for model"
+                                            "example": "Suppliers retrieved successfully"
+                                        },
+                                        "links": {
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string",
+                                                    "example": "http://domain_name.com/api/suppliers?page=1"
+                                                },
+                                                "last": {
+                                                    "type": "string",
+                                                    "example": "http://domainname.com/api/suppliers?page=4"
+                                                },
+                                                "prev": {
+                                                    "type": "string",
+                                                    "example": null,
+                                                    "nullable": true
+                                                },
+                                                "next": {
+                                                    "type": "string",
+                                                    "example": "http://domain_name.com/api/suppliers?page=2"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "from": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 4
+                                                },
+                                                "path": {
+                                                    "type": "string",
+                                                    "example": "http://domainname.com/api/suppliers"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "to": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 55
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": "string",
+                                                                "nullable": true
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "code": {
+                                                        "type": "string",
+                                                        "example": "SUP-0001"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "phone": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "datetime"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "datetime"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
                                         }
                                     },
                                     "type": "object"
@@ -2716,6 +2782,14 @@
                                         "message": {
                                             "type": "string",
                                             "example": "An error occurred"
+                                        },
+                                        "errors": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": ""
                                         }
                                     },
                                     "type": "object"
@@ -2768,30 +2842,43 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "id": {
-                                            "type": "integer"
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
                                         },
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "email": {
+                                        "message": {
                                             "type": "string",
-                                            "nullable": true
+                                            "example": "Supplier created successfully"
                                         },
-                                        "phone": {
-                                            "type": "string",
-                                            "nullable": true
-                                        },
-                                        "created_at": {
-                                            "type": "string",
-                                            "format": "datetime"
-                                        },
-                                        "updated_at": {
-                                            "type": "string",
-                                            "format": "datetime"
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "phone": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "datetime"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "datetime"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -2800,7 +2887,68 @@
                         }
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The name field is required."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": ""
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        },
+                                        "errors": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": ""
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -2830,30 +2978,43 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "id": {
-                                            "type": "integer"
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
                                         },
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "email": {
+                                        "message": {
                                             "type": "string",
-                                            "nullable": true
+                                            "example": "Supplier retrieved successfully"
                                         },
-                                        "phone": {
-                                            "type": "string",
-                                            "nullable": true
-                                        },
-                                        "created_at": {
-                                            "type": "string",
-                                            "format": "datetime"
-                                        },
-                                        "updated_at": {
-                                            "type": "string",
-                                            "format": "datetime"
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "phone": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "datetime"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "datetime"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -2862,7 +3023,56 @@
                         }
                     },
                     "404": {
-                        "description": "Supplier not found"
+                        "description": "Supplier not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Supplier not found"
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An unexpected error occurred."
+                                        },
+                                        "errors": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": ""
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -2920,30 +3130,86 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "id": {
-                                            "type": "integer"
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
                                         },
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "email": {
+                                        "message": {
                                             "type": "string",
-                                            "nullable": true
+                                            "example": "Supplier updated successfully"
                                         },
-                                        "phone": {
-                                            "type": "string",
-                                            "nullable": true
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "phone": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "datetime"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "datetime"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
                                         },
-                                        "created_at": {
+                                        "message": {
                                             "type": "string",
-                                            "format": "datetime"
+                                            "example": "Validation failed"
                                         },
-                                        "updated_at": {
+                                        "errors": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The name field is required."
+                                                    }
+                                                },
+                                                "email": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The email must be a valid email address."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "data": {
                                             "type": "string",
-                                            "format": "datetime"
+                                            "example": ""
                                         }
                                     },
                                     "type": "object"
@@ -2952,10 +3218,56 @@
                         }
                     },
                     "404": {
-                        "description": "Supplier not found"
+                        "description": "Supplier not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Supplier not found"
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
-                    "422": {
-                        "description": "Validation error"
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An unexpected error occurred."
+                                        },
+                                        "errors": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": ""
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -2983,9 +3295,17 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
                                         "message": {
                                             "type": "string",
                                             "example": "Deleted successfully"
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": ""
                                         }
                                     },
                                     "type": "object"
@@ -2994,7 +3314,56 @@
                         }
                     },
                     "404": {
-                        "description": "Supplier not found"
+                        "description": "Supplier not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Supplier not found"
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An unexpected error occurred."
+                                        },
+                                        "errors": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": ""
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }

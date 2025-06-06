@@ -7,9 +7,9 @@ use App\Repositories\Interfaces\SupplierRepositoryInterface;
 
 class SupplierRepository implements SupplierRepositoryInterface
 {
-    public function all()
+    public function all($perPage = 15)
     {
-        return Supplier::all();
+        return Supplier::paginate($perPage);
     }
 
     public function find($id)
