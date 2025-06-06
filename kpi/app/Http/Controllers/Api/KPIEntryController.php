@@ -9,6 +9,8 @@ use App\Http\Requests\StoreKPIEntryRequest;
 use App\Http\Resources\KpiEntryResource;
 use App\Services\KPIEntryService;
 use App\Traits\ApiResponseTrait;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 /**
@@ -44,16 +46,60 @@ class KPIEntryController extends Controller
      *         response=200,
      *         description="List of KPI entries",
      *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="KPIs retrieved successfully"),
+     *             @OA\Property(
+     *                 property="links",
      *                 type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="name", type="string", example="Sales Target"),
-     *                 @OA\Property(property="value", type="number", format="float", example=85.5),
-     *                 @OA\Property(property="month", type="string", example="2025-06"),
-     *                 @OA\Property(property="created_at", type="string", format="date-time"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *                 @OA\Property(property="first", type="string", example="http://domain_name.com/api/kpis?page=1"),
+     *                 @OA\Property(property="last", type="string", example="http://domainname.com/api/kpis?page=4"),
+     *                 @OA\Property(property="prev", type="string", nullable=true, example=null),
+     *                 @OA\Property(property="next", type="string", example="http://domain_name.com/api/kpis?page=2")
+     *             ),
+     *             @OA\Property(
+     *                 property="meta",
+     *                 type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="from", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=4),
+     *                 @OA\Property(property="path", type="string", example="http://domainname.com/api/kpis"),
+     *                 @OA\Property(property="per_page", type="integer", example=15),
+     *                 @OA\Property(property="to", type="integer", example=15),
+     *                 @OA\Property(property="total", type="integer", example=55),
+     *                 @OA\Property(
+     *                     property="links",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         type="object",
+     *                         @OA\Property(property="url", type="string", nullable=true),
+     *                         @OA\Property(property="label", type="string"),
+     *                         @OA\Property(property="active", type="boolean")
+     *                     )
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=1),
+     *                      @OA\Property(property="name", type="string", example="Sales Target"),
+     *                      @OA\Property(property="value", type="number", format="float", example=85.5),
+     *                      @OA\Property(property="month", type="string", example="2025-06"),
+     *                      @OA\Property(property="created_at", type="string", format="date-time"),
+     *                      @OA\Property(property="updated_at", type="string", format="date-time")
+     *                  )
      *             )
+     *         ),
+     *     ),
+     *      @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
      *         )
      *     )
      * )
@@ -66,7 +112,7 @@ class KPIEntryController extends Controller
 
         return $this->success(
             KpiEntryResource::collection($kpis)->response()->getData(true),
-            'Kpi entry retrieved successfully',
+            'KPIs retrieved successfully',
             201
         );
     }
@@ -95,20 +141,59 @@ class KPIEntryController extends Controller
      *         response=201,
      *         description="KPI created successfully",
      *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="id", type="integer", example=1),
-     *             @OA\Property(property="name", type="string", example="Sales Target"),
-     *             @OA\Property(property="value", type="number", format="float", example=90.5),
-     *             @OA\Property(property="month", type="string", example="2025-06"),
-     *             @OA\Property(property="created_at", type="string", format="date-time"),
-     *             @OA\Property(property="updated_at", type="string", format="date-time")
+     *              @OA\Property(property="status", type="boolean", example=true),
+     *              @OA\Property(property="message", type="string", example="KPI created successfully"),
+     *              @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Sales Target"),
+     *                 @OA\Property(property="value", type="number", format="float", example=90.5),
+     *                 @OA\Property(property="month", type="string", example="2025-06"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *          response=422, 
+     *          description="Validation Error",
+     *          @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="customer_id", type="array", @OA\Items(type="string", example="The customer id field is required.")),
+     *                 @OA\Property(property="product_id", type="array", @OA\Items(type="string", example="The product id field is required.")),
+     *                 @OA\Property(property="supplier_id", type="array", @OA\Items(type="string", example="The supplier id field is required.")),
+     *                 @OA\Property(property="month", type="array", @OA\Items(type="string", example="The month field is required.")),
+     *                 @OA\Property(property="uom", type="array", @OA\Items(type="string", example="The uom field is required.")),
+     *                 @OA\Property(property="quantity", type="array", @OA\Items(type="string", example="The quantity field is required.")),
+     *                 @OA\Property(property="asp", type="array", @OA\Items(type="string", example="The asp field is required.")),
+     *                 @OA\Property(property="total_value", type="array", @OA\Items(type="string", example="The total value field is required.")),
+     *             ),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     ),
+     *    @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
      *         )
      *     )
      * )
      */
     public function store(KPIEntryRequest $request)
     {
-        return response()->json($this->service->store($request->validated()), 201);
+        $kpi = $this->service->store($request->validated());
+        return $this->success(
+            new KpiEntryResource($kpi),
+            'KPI created successfully',
+            201
+        );
     }
 
     /**
@@ -124,23 +209,52 @@ class KPIEntryController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="KPI found",
+     *         description="KPI retrieved successfully",
      *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="id", type="integer", example=1),
-     *             @OA\Property(property="name", type="string", example="Sales Target"),
-     *             @OA\Property(property="value", type="number", format="float", example=85.5),
-     *             @OA\Property(property="month", type="string", example="2025-06"),
-     *             @OA\Property(property="created_at", type="string", format="date-time"),
-     *             @OA\Property(property="updated_at", type="string", format="date-time")
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="KPI retrieved successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Sales Target"),
+     *                 @OA\Property(property="value", type="number", format="float", example=85.5),
+     *                 @OA\Property(property="month", type="string", example="2025-06"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
      *         )
      *     ),
-     *     @OA\Response(response=404, description="KPI not found")
+     *     @OA\Response(
+     *         response=404,
+     *         description="KPI not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="KPI not found"),
+     *             @OA\Property(property="data", type="string", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     )
      * )
      */
     public function show($id)
     {
-        return response()->json($this->service->find($id));
+        try {
+            $kpi = $this->service->find($id);
+            return $this->success(
+                new KpiEntryResource($kpi),
+                'KPI retrieved successfully'
+            );
+        } catch (\Exception $e) {
+            return $this->error('KPI not found', 404);
+        }
     }
 
     /**
@@ -158,30 +272,91 @@ class KPIEntryController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             type="object",
-     *             required={"name", "value", "month"},
-     *             @OA\Property(property="name", type="string", example="Sales Target"),
-     *             @OA\Property(property="value", type="number", format="float", example=90.5),
-     *             @OA\Property(property="month", type="string", example="2025-06")
+     *             required={"customer_id", "supplier_id", "uom", "product_id", "quantity", "asp", "total_value"},
+     *             @OA\Property(property="customer_id", type="number", example="1"),
+     *             @OA\Property(property="month", type="string", example="2025-06"),
+     *             @OA\Property(property="product_id", type="number", example="1"),
+     *             @OA\Property(property="supplier_id", type="number", example="1"),
+     *             @OA\Property(property="uom", type="string", example="kg"),
+     *             @OA\Property(property="quantity", type="number", example="1"),
+     *             @OA\Property(property="asp", type="number", example="5"),
+     *             @OA\Property(property="total_value", type="number", example="5"),
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="KPI updated successfully",
      *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="id", type="integer", example=1),
-     *             @OA\Property(property="name", type="string", example="Sales Target"),
-     *             @OA\Property(property="value", type="number", format="float", example=90.5),
-     *             @OA\Property(property="month", type="string", example="2025-06"),
-     *             @OA\Property(property="created_at", type="string", format="date-time"),
-     *             @OA\Property(property="updated_at", type="string", format="date-time")
+     *              @OA\Property(property="status", type="boolean", example=true),
+     *              @OA\Property(property="message", type="string", example="KPI updated successfully"),
+     *              @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="code", type="string", example="KPI-0001"),
+     *                 @OA\Property(property="month", type="string", example="2025-06-10"),
+     *                 @OA\Property(property="uom", type="string", example="kg"),
+     *                 @OA\Property(property="quantity", type="number", example=90),
+     *                 @OA\Property(property="asp", type="number", example=5),
+     *                 @OA\Property(property="total_value", type="number", format="float", example=90.5),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
+     *         )
+     *     ),
+     *      @OA\Response(
+     *          response=422, 
+     *          description="Validation Error",
+     *          @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="customer_id", type="array", @OA\Items(type="string", example="The customer id field is required.")),
+     *                 @OA\Property(property="product_id", type="array", @OA\Items(type="string", example="The product id field is required.")),
+     *                 @OA\Property(property="supplier_id", type="array", @OA\Items(type="string", example="The supplier id field is required.")),
+     *                 @OA\Property(property="month", type="array", @OA\Items(type="string", example="The month field is required.")),
+     *                 @OA\Property(property="uom", type="array", @OA\Items(type="string", example="The uom field is required.")),
+     *                 @OA\Property(property="quantity", type="array", @OA\Items(type="string", example="The quantity field is required.")),
+     *                 @OA\Property(property="asp", type="array", @OA\Items(type="string", example="The asp field is required.")),
+     *                 @OA\Property(property="total_value", type="array", @OA\Items(type="string", example="The total value field is required.")),
+     *             ),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     ),     
+     *     @OA\Response(
+     *         response=404,
+     *         description="KPI not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="KPI not found"),
+     *             @OA\Property(property="data", type="string", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
      *         )
      *     )
      * )
      */
     public function update(KPIEntryRequest $request, $id)
     {
-        return response()->json($this->service->update($id, $request->validated()));
+        try {
+            $kpi = $this->service->update($id, $request->validated());
+            return $this->success(
+                new KpiEntryResource($kpi),
+                'KPI updated successfully'
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->error('KPI not found.', 404);
+        } catch (Exception $e) {
+            return $this->error('An unexpected error occurred.', 500);
+        }
     }
 
     /**
@@ -199,19 +374,45 @@ class KPIEntryController extends Controller
      *         response=200,
      *         description="Deleted successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Kpi entry Deleted successfully")
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Kpi entry Deleted successfully"),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="KPI not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="KPI not found"),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
      *         )
      *     )
      * )
      */
     public function destroy($id)
     {
-        $this->service->delete($id);
-        return $this->success(
-            '',
-            'Kpi entry Deleted successfully',
-            200
-        );
+        try {
+            $this->service->delete($id);
+            return $this->success(
+                "",
+                'KPI deleted successfully'
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->error('KPI not found.', 404);
+        } catch (Exception $e) {
+            return $this->error('An unexpected error occurred.', 500);
+        }
     }
 
     /**
@@ -257,27 +458,6 @@ class KPIEntryController extends Controller
      *                     type="object",
      *                     @OA\Property(property="id", type="integer", example=101),
      *                     @OA\Property(property="code", type="string", example="KPI-2025-001"),
-     *                     @OA\Property(
-     *                         property="customer",
-     *                         type="object",
-     *                         nullable=true,
-     *                         @OA\Property(property="id", type="integer", example=11),
-     *                         @OA\Property(property="name", type="string", example="Acme Corp")
-     *                     ),
-     *                     @OA\Property(
-     *                         property="product",
-     *                         type="object",
-     *                         nullable=true,
-     *                         @OA\Property(property="id", type="integer", example=7),
-     *                         @OA\Property(property="name", type="string", example="Premium Widget")
-     *                     ),
-     *                     @OA\Property(
-     *                         property="supplier",
-     *                         type="object",
-     *                         nullable=true,
-     *                         @OA\Property(property="id", type="integer", example=3),
-     *                         @OA\Property(property="name", type="string", example="Global Supplies Ltd.")
-     *                     ),
      *                     @OA\Property(property="month", type="string", example="2025-06"),
      *                     @OA\Property(property="uom", type="string", example="units"),
      *                     @OA\Property(property="quantity", type="integer", example=1200),
@@ -289,8 +469,16 @@ class KPIEntryController extends Controller
      *             )
      *         )
      *     ),
-     *     @OA\Response(response=401, description="Unauthorized"),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *     )
      * )
      */
     public function bulkStore(StoreKPIEntryRequest $request)
@@ -316,6 +504,35 @@ class KPIEntryController extends Controller
      *             type="object",
      *             @OA\Property(property="status", type="string", example="success"),
      *             @OA\Property(property="message", type="string", example="Kpi trashed entry retrieved successfully"),
+     *              @OA\Property(
+     *                 property="links",
+     *                 type="object",
+     *                 @OA\Property(property="first", type="string", example="http://domain_name.com/api/trashed?page=1"),
+     *                 @OA\Property(property="last", type="string", example="http://domainname.com/api/trashed?page=4"),
+     *                 @OA\Property(property="prev", type="string", nullable=true, example=null),
+     *                 @OA\Property(property="next", type="string", example="http://domain_name.com/api/trashed?page=2")
+     *             ),
+     *             @OA\Property(
+     *                 property="meta",
+     *                 type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="from", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=4),
+     *                 @OA\Property(property="path", type="string", example="http://domainname.com/trashed/kpis"),
+     *                 @OA\Property(property="per_page", type="integer", example=15),
+     *                 @OA\Property(property="to", type="integer", example=15),
+     *                 @OA\Property(property="total", type="integer", example=55),
+     *                 @OA\Property(
+     *                     property="links",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         type="object",
+     *                         @OA\Property(property="url", type="string", nullable=true),
+     *                         @OA\Property(property="label", type="string"),
+     *                         @OA\Property(property="active", type="boolean")
+     *                     )
+     *                 )
+     *             ),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
@@ -353,6 +570,16 @@ class KPIEntryController extends Controller
      *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-05-20T10:33:00Z")
      *                 )
      *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
      *         )
      *     )
      * )
@@ -399,13 +626,47 @@ class KPIEntryController extends Controller
      *         description="Bulk KPI entries updated successfully",
      *         @OA\JsonContent(
      *             type="object",
-     *             @OA\Property(property="message", type="string", example="Bulk update completed"),
-     *             @OA\Property(property="updated_count", type="integer", example=3)
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="KPI entries updated successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                    @OA\Property(property="id", type="integer", example=1),
+     *                    @OA\Property(property="code", type="string", example="KPI-0001"),
+     *                    @OA\Property(property="month", type="string", example="2025-06-10"),
+     *                    @OA\Property(property="uom", type="string", example="kg"),
+     *                    @OA\Property(property="quantity", type="number", example=90),
+     *                    @OA\Property(property="asp", type="number", example=5),
+     *                    @OA\Property(property="total_value", type="number", format="float", example=90.5),
+     *                    @OA\Property(property="created_at", type="string", format="date-time"),
+     *                   @OA\Property(property="updated_at", type="string", format="date-time")
+     *                 )
+     *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Validation error"
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="entries", type="array", @OA\Items(type="string", example="You must provide at least one entry to update.")),
+     *                 @OA\Property(property="entries.0.id", type="array", @OA\Items(type="string", example="The entries.0.id field is required."))
+     *             ),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
      *     )
      * )
      */
@@ -436,13 +697,11 @@ class KPIEntryController extends Controller
      *         response=200,
      *         description="KPI Entry restored successfully",
      *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="KPI Entry restored successfully."),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="integer", example=5),
      *                 @OA\Property(property="code", type="string", example="KPI-0005"),
-     *                 @OA\Property(property="customer_id", type="integer", example=1),
-     *                 @OA\Property(property="product_id", type="integer", example=2),
-     *                 @OA\Property(property="supplier_id", type="integer", example=3),
      *                 @OA\Property(property="month", type="string", example="2025-06-01"),
      *                 @OA\Property(property="uom", type="string", example="pcs"),
      *                 @OA\Property(property="quantity", type="integer", example=100),
@@ -454,8 +713,14 @@ class KPIEntryController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *         response=404,
-     *         description="KPI Entry not found"
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
      *     )
      * )
      */

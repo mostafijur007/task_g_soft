@@ -34,7 +34,7 @@ class KPIEntryRepository implements KPIEntryRepositoryInterface
         return KPIEntry::findOrFail($id)->delete();
     }
 
-    public function byMonth($perPage = 10)
+    public function byMonth($month, $perPage = 10)
     {
         return KPIEntry::with('customer', 'product', 'supplier')->where('month', $month)->paginate($perPage);
     }
