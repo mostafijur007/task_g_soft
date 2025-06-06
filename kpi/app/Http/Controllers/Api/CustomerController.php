@@ -483,7 +483,7 @@ class CustomerController extends Controller
      *         response=200,
      *         description="Products assigned",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Assigned products retrieved successfully"),
      *             @OA\Property(
      *                 property="data",
@@ -542,17 +542,41 @@ class CustomerController extends Controller
      *         response=200,
      *         description="List of assigned products",
      *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(
-     *                 type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="code", type="string", example="PROD-0001"),
-     *                 @OA\Property(property="name", type="string", example="Sample Product"),
-     *                 @OA\Property(property="uom", type="string", example="pcs"),
-     *                 @OA\Property(property="description", type="string", nullable=true, example="This is a sample product"),
-     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-01T12:00:00Z"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-02T12:00:00Z")
-     *             )
+     *              @OA\Property(property="status", type="boolean", example=true),
+     *              @OA\Property(property="message", type="string", example="Assigned products retrieved successfull"),
+     *               @OA\Property(
+     *                  property="data", 
+     *                  type="array",
+     *                  @OA\Items(
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=1),
+     *                      @OA\Property(property="code", type="string", example="PROD-0001"),
+     *                      @OA\Property(property="name", type="string", example="Sample Product"),
+     *                      @OA\Property(property="uom", type="string", example="pcs"),
+     *                      @OA\Property(property="description", type="string", nullable=true, example="This is a sample product"),
+     *                      @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-01T12:00:00Z"),
+     *                      @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-02T12:00:00Z")
+     *                  ) 
+     *               ),
+     *         )
+     *     ),
+     *      @OA\Response(
+     *      response=404, 
+     *      description="Not Found",
+     *       @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Customer not found"),
+     *             @OA\Property(property="data", type="string", example="")
+     *         )
+     *      ),
+     *      @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An error occurred"),
+     *             @OA\Property(property="errors", type="string", example=""),
+     *             @OA\Property(property="data", type="string", example="")
      *         )
      *     )
      * )
