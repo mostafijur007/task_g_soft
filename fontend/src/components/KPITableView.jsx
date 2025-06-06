@@ -46,17 +46,17 @@ const KPITableView = () => {
 
   useEffect(() => {
     const grouped = kpiData.reduce((acc, item) => {
-      const key = `${item.month}-${item.customer.id}-${item.product.id}`;
+      const key = `${item.month}-${item.customer?.id}-${item.product?.id}`;
       if (!acc[key]) {
         acc[key] = {
           month: item.month,
-          customer: item.customer.name,
-          product: item.product.name,
+          customer: item.customer?.name,
+          product: item.product?.name,
           items: [],
         };
       }
       acc[key].items.push({
-        supplier: item.supplier.name,
+        supplier: item.supplier?.name,
         uom: item.uom,
         quantity: item.quantity,
         asp: item.asp,

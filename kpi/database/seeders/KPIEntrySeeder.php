@@ -13,6 +13,6 @@ class KPIEntrySeeder extends Seeder
      */
     public function run(): void
     {
-        KPIEntry::factory()->count(5)->create();
+        KPIEntry::factory()->count(50)->create();
     }
 }

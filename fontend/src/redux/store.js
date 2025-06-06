@@ -5,7 +5,8 @@ import {
 } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/api";
+// const API_URL = "http://localhost:8000/api";
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Async Thunks
 export const fetchOptions = createAsyncThunk("app/fetchOptions", async () => {
@@ -174,7 +175,7 @@ const appSlice = createSlice({
         }
       })
       .addCase(fetchSuppliers.fulfilled, (state, action) => {
-        state.options.allSuppliers = action.payload;
+        state.options.allSuppliers = action.payload.data;
       })
       .addCase(assignSupplierToProducts.fulfilled, (state, action) => {
         const { product_id, supplier_ids } = action.payload;
